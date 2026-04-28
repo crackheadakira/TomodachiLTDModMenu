@@ -1,0 +1,209 @@
+--- Screen Size Extraction Results ---
+[OK] ScreenEditorCommonBg | Size: 0x350 | Inline Wrapper: 7101a7b0e8
+[OK] ScreenEditorCommonInfoOperation | Size: 0x370 | Inline Wrapper: 7101a7b6f0
+[OK] ScreenEditorCommonTitle | Size: 0xA48 | Inline Wrapper: 7101a7c0d0
+[OK] ScreenEditorCommonTutorial | Size: 0x5C8 | Inline Wrapper: 7101a7caf4
+[OK] ScreenEditorSmallDialog | Size: 0x358 | Inline Wrapper: 7101a7d204
+[OK] ScreenIslandEditor | Size: 0x1D40 | Constructor: 71008f5f58
+[OK] ScreenMiiEditor | Size: 0x1E80 | Constructor: 7101b063d0
+[OK] ScreenMiiEditorBg | Size: 0x348 | Inline Wrapper: 7101b06880
+[OK] ScreenMiiEditorBodyType | Size: 0x920 | Inline Wrapper: 7101b07894
+[OK] ScreenMiiEditorConfirm | Size: 0x558 | Inline Wrapper: 7101b0802c
+[OK] ScreenMiiEditorEasy | Size: 0x1080 | Inline Wrapper: 7101b09bd8
+[OK] ScreenMiiEditorEasyCompare | Size: 0xA78 | Inline Wrapper: 7101b0c820
+[OK] ScreenMiiEditorEasyCompareDialog | Size: 0x398 | Inline Wrapper: 7101b0e304
+[OK] ScreenMiiEditorEasyComplete | Size: 0x408 | Inline Wrapper: 7101b0e9d0
+[OK] ScreenMiiEditorMenu | Size: 0x360 | Inline Wrapper: 7101b0fc50
+[OK] ScreenMiiEditorPreview | Size: 0x3F0 | Inline Wrapper: 7101b1b7c8
+[OK] ScreenMiiEditorSwitchMiiList | Size: 0x28F0 | Inline Wrapper: 7101b1c454
+[OK] ScreenMiiEditorTop | Size: 0x350 | Inline Wrapper: 7101b1cbc4
+[OK] ScreenTestEditor | Size: 0x10000 | Constructor: 7101b38b24
+[OK] ScreenUgcAtelier | Size: 0x918 | Constructor: 7101b666a8
+[OK] ScreenUgcEditor | Size: 0x1620 | Constructor: 7101b667c4
+[OK] ScreenUgcEditorBg | Size: 0x350 | Inline Wrapper: 7101b6b230
+[OK] ScreenUgcEditorComplete | Size: 0x418 | Constructor: 7101b6bee8
+[OK] ScreenUgcEditorDetail | Size: 0xAC8 | Constructor: 7101b72c0c
+[OK] ScreenUgcEditorDrawMenu | Size: 0xCC8 | Constructor: 7101b73fa0
+[OK] ScreenUgcEditorFirstHalfMenu | Size: 0x2C78 | Constructor: 7101b77a90
+[OK] ScreenUgcEditorLatterHalfMenu | Size: 0x1638 | Constructor: 7101b7fd3c
+[OK] ScreenUgcEditorStampList | Size: 0x1818 | Constructor: 7101b81e38
+[OK] ScreenUgcListAll | Size: 0xFFD8 | Constructor: 7101b8699c
+[OK] ScreenLocalNetworkDialogOverwrite | Size: 0x2840 | Constructor: 7101e1015c
+[OK] ScreenLocalNetworkDialogSend | Size: 0x378 | Constructor: 7101e1074c
+[OK] ScreenLocalNetworkMenu | Size: 0xF40 | Constructor: 7101e11388
+[OK] Screen3DControl | Size: 0x350 | Inline Wrapper: 7100a73238
+[OK] Screen3DLayout | Size: 0x1EC0 | Constructor: 7100a736e4
+[OK] Screen3DLayoutFront | Size: 0x1F28 | Constructor: 710084c370
+[OK] Screen3DLayoutOnCursor | Size: 0x1EC0 | Inline Wrapper: 7100a736e4
+[OK] ScreenAdviceRight | Size: 0x350 | Inline Wrapper: 710206f2f4
+[OK] ScreenBoxCursor | Size: 0x350 | Inline Wrapper: 7100a73898
+[OK] ScreenCantTouch | Size: 0x350 | Inline Wrapper: 7100a73928
+[OK] ScreenCapturePhoto | Size: 0x348 | Inline Wrapper: 710206f9e8
+[OK] ScreenChangeClothes | Size: 0x5578 | Inline Wrapper: 71008eb5b8
+[OK] ScreenCinemaScope | Size: 0x358 | Inline Wrapper: 7100a73c88
+[OK] ScreenClothesEditorBase | Size: 0x5578 | Constructor: 71008eb5b8
+[OK] ScreenCommon | Size: 0x348 | Inline Wrapper: 71020749b4
+[OK] UICommonScreen | Size: 0x348 | Inline Wrapper: 7100a73d98
+[OK] ScreenCommonSystemBtnBase | Size: 0x350 | Inline Wrapper: 71020753d4
+[OK] ScreenCommonBackBtn | Size: 0x350 | Inline Wrapper: 7100a73e64
+[OK] ScreenCommonBackBtnHandler | Size: 0x350 | Inline Wrapper: 7100a73f54
+[OK] ScreenCommonFooterBase | Size: 0x3B0 | Inline Wrapper: 7100a740e0
+[OK] ScreenCommonIslandFooter | Size: 0x3B0 | Inline Wrapper: 7100a740e0
+[OK] ScreenCommonMenuFooter | Size: 0x3B0 | Inline Wrapper: 7100a74180
+[OK] ScreenCommonMenuBG | Size: 0x360 | Inline Wrapper: 7100a7431c
+[OK] ScreenCommonMenuBtn | Size: 0x350 | Inline Wrapper: 7100a743b8
+[OK] ScreenCommonSkip | Size: 0x368 | Inline Wrapper: 7100a744d4
+[OK] ScreenConfessionAdvice | Size: 0x370 | Constructor: 7100a747c0
+[OK] ScreenControlDisabler | Size: 0x348 | Inline Wrapper: 7100a74878
+[OK] ScreenDemoCapture | Size: 0x1E28 | Constructor: 71020937f4
+[OK] ScreenDemoFaderBase | Size: 0x388 | Constructor: 71008572fc
+[OK] ScreenDemoFaderDrama | Size: 0x388 | Inline Wrapper: 710085729c
+[OK] ScreenDemoFaderSimple | Size: 0x388 | Inline Wrapper: 7102079668
+[OK] ScreenAccidentHandPick | Size: 0x3C8 | Constructor: 710207a3b8
+[OK] ScreenAccidentHandSidePush | Size: 0x3C8 | Constructor: 710207a4b4
+[OK] ScreenAccidentHandStrokeRight | Size: 0x430 | Constructor: 710207a5c4
+[OK] ScreenAccidentHandStrokeLeft | Size: 0x430 | Inline Wrapper: 710207a580
+[OK] ScreenBungeeHandPush | Size: 0x430 | Inline Wrapper: 710207a6ec
+[OK] ScreenEventHandGood | Size: 0x358 | Inline Wrapper: 710207a760
+[OK] ScreenEventHandClap | Size: 0x358 | Inline Wrapper: 710207a7dc
+[OK] FOUND_NO_SCREEN_NAME | Size: 0x358 | Inline Wrapper: 710207a858
+[OK] ScreenDemoNewsCaster | Size: 0xEE8 | Inline Wrapper: 710207b07c
+[OK] ScreenDemoPicture | Size: 0x378 | Constructor: 7100a74f98
+[OK] ScreenDemoSelectBtn | Size: 0x2358 | Constructor: 71008fb004
+[OK] ScreenDemoSlider | Size: 0x360 | Inline Wrapper: 710207c974
+[OK] ScreenDialog | Size: 0x360 | Inline Wrapper: 7100a75134
+[OK] ScreenDialogShopBuy | Size: 0x358 | Inline Wrapper: 710207e1b4
+[OK] ScreenDreamCommon | Size: 0x348 | Inline Wrapper: 7100a75248
+[OK] ScreenDreamFader | Size: 0x388 | Inline Wrapper: 7100a7538c
+[OK] ScreenEditPronoun | Size: 0x368 | Constructor: 7100a75428
+[OK] ScreenEmotionBottle | Size: 0xF78 | Constructor: 71008e2528
+[OK] ScreenEncyclopediaBg | Size: 0x370 | Inline Wrapper: 7100a75744
+[OK] ScreenEncyclopediaItem | Size: 0x510 | Constructor: 71020805cc
+[OK] ScreenEncyclopediaList | Size: 0x390 | Inline Wrapper: 7102085dd4
+[OK] ScreenEncyclopediaMenu | Size: 0x6C8 | Inline Wrapper: 71020879bc
+[OK] ScreenFadeWipe | Size: 0x3B0 | Constructor: 71008512e0
+[OK] ScreenFadeWipeBehind | Size: 0x3B0 | Inline Wrapper: 7100a763b0
+[OK] ScreenFadeWipeInDemo | Size: 0x3B0 | Inline Wrapper: 7100a76410
+[OK] ScreenFirstBootSetting | Size: 0x3A8 | Inline Wrapper: 710208aad8
+[OK] ScreenFirstTutorial | Size: 0x538 | Constructor: 7100826e9c
+[OK] ScreenFountainDonationDialog | Size: 0xA18 | Constructor: 71008bb9b8
+[OK] ScreenFountainDonationHand | Size: 0x1000 | Constructor: 71008f83bc
+[OK] ScreenFountainWishBg | Size: 0x3C0 | Constructor: 71008c9d10
+[OK] ScreenFountainWishDialog | Size: 0x3F0 | Constructor: 71008cc274
+[OK] ScreenFountainWishLiberation | Size: 0x380 | Inline Wrapper: 7100a7694c
+[OK] ScreenFountainWishList | Size: 0x378 | Inline Wrapper: 7100a769f8
+[OK] ScreenFountainWishMenu | Size: 0x508 | Inline Wrapper: 71008d1d14
+[OK] ScreenGiveMoney | Size: 0x360 | Inline Wrapper: 7100a76de8
+[OK] ScreenGrowthPhoto | Size: 0x1E28 | Inline Wrapper: 71020937f4
+[OK] ScreenGrowthPhotoForCapture | Size: 0xFA8 | Constructor: 7102093d44
+[OK] ScreenHouseList | Size: 0x33C0 | Constructor: 710095ce64
+[OK] ScreenHouseMenu | Size: 0x548 | Constructor: 71008eb400
+[OK] ScreenHouseRenovation | Size: 0x3B8 | Constructor: 71008c9dbc
+[OK] ScreenInlineKeyboard | Size: 0x1D70 | Constructor: 71008ab708
+[OK] ScreenIntroductionDialog | Size: 0x1778 | Constructor: 7100909444
+[OK] ScreenIntroductionTelop | Size: 0x348 | Inline Wrapper: 7100a77d28
+[OK] ScreenIntroductionTelopFront | Size: 0x348 | Inline Wrapper: 7100a77db8
+[OK] ScreenIsland | Size: 0x3E8 | Constructor: 71008f058c
+[OK] ScreenIslandAttentionBtn | Size: 0x348 | Inline Wrapper: 71020a1408
+[OK] ScreenIslandEntranceInfo | Size: 0x360 | Inline Wrapper: 7100a78168
+[OK] ScreenIslandInfo | Size: 0x390 | Inline Wrapper: 7100a78550
+[OK] ScreenIslandInfoDetail | Size: 0x378 | Inline Wrapper: 7100a78cec
+[OK] ScreenIslandLevelUp | Size: 0x3D8 | Inline Wrapper: 7100a78e4c
+[OK] ScreenIslandMenu | Size: 0x4D0 | Constructor: 710089710c
+[ERR] FOUND_NO_SCREEN_NAME | FOUND NOTHING WITH MANUAL CHECK
+[OK] ScreenItemListPawnShop | Size: 0x9D10 | Inline Wrapper: 71020a963c
+[OK] ScreenItemListPlayer | Size: 0x9D08 | Constructor: 71020b0a98
+[OK] ScreenItemListShopBuilding | Size: 0x9D08 | Inline Wrapper: 71020b0a98
+[OK] ScreenItemListShopCloth | Size: 0x9F38 | Constructor: 71020b0b7c
+[OK] ScreenItemListShopFood | Size: 0x9D08 | Inline Wrapper: 71020b65c8
+[OK] ScreenItemListShopGoods | Size: 0x9D08 | Inline Wrapper: 71020b6cb4
+[OK] ScreenItemListShopInterior | Size: 0x9E08 | Constructor: 71020ba4c4
+[OK] ScreenItemListTop | Size: 0x358 | Inline Wrapper: 7100a79408
+[OK] ScreenItemNew | Size: 0x3C8 | Constructor: 71008676d0
+[OK] ScreenLevelUpClothesPresent | Size: 0x9F48 | Inline Wrapper: 71020bd144
+[OK] ScreenLevelUpPresent | Size: 0x460 | Constructor: 71008ee544
+[OK] ScreenLevelUpPresentBg | Size: 0x348 | Inline Wrapper: 7100a79c48
+[OK] ScreenLiveTogetherList | Size: 0x870 | Constructor: 7100a7a0dc
+[OK] ScreenMakeClothes | Size: 0x1BA0 | Constructor: 71020c449c
+[OK] ScreenMarket | Size: 0x4C8 | Constructor: 71020c6e48
+[OK] ScreenMiiBrain | Size: 0x1328 | Constructor: 71008d81b0
+[OK] ScreenMiiBrainForDemoBG | Size: 0x1328 | Inline Wrapper: 71020c927c
+[OK] ScreenMiiCharacter | Size: 0x360 | Constructor: 7100a7a434
+[OK] ScreenMiiCharDetail | Size: 0x4CA8 | Constructor: 7100912b44
+[OK] ScreenMiiCharDistribution | Size: 0x350 | Inline Wrapper: 7100a7a9d8
+[OK] ScreenMiiEventTelop | Size: 0x370 | Inline Wrapper: 7100a7aa88
+[OK] ScreenMiiFavoriteFoodList | Size: 0x4C0 | Constructor: 71008f588c
+[OK] ScreenMiiFocusChoice | Size: 0x348 | Inline Wrapper: 71020cdb94
+[OK] ScreenMiiGoodsSlotList | Size: 0x520 | Constructor: 71008be514
+[OK] ScreenMiiList | Size: 0x898 | Constructor: 71008e2608
+[OK] ScreenMiiNewsBase | Size: 0x350 | Inline Wrapper: 71020d0d54
+[OK] ScreenMiiNewsBreakingComplete | Size: 0x4ED0 | Constructor: 71020d2504
+[OK] ScreenMiiNewsBreakingContent | Size: 0xBA48 | Constructor: 71020d55c0
+[OK] ScreenMiiNewsBreakingIslandDevelopment | Size: 0x4C48 | Inline Wrapper: 71020d6384
+[OK] ScreenMiiNewsBreakingUgcMade | Size: 0x8660 | Constructor: 71020d8070
+[OK] ScreenMiiNewsCaster | Size: 0x23D0 | Constructor: 71020dc2a0
+[OK] ScreenMiiNewsContent | Size: 0x4BB8 | Constructor: 71020e0a04
+[ERR] FOUND_NO_SCREEN_NAME | FOUND NOTHING WITH MANUAL CHECK
+[OK] ScreenMiiNewsFade | Size: 0xF00 | Inline Wrapper: 7100a7b234
+[OK] ScreenMiiNewsInterview | Size: 0x1C30 | Constructor: 71020e4508
+[OK] ScreenMiiNewsListFade | Size: 0x348 | Inline Wrapper: 7100a7b348
+[OK] ScreenMiiStomach | Size: 0x3F0 | Inline Wrapper: 7100a7b540
+[OK] ScreenMiiStomachForDemoBG | Size: 0x3F0 | Inline Wrapper: 71020e5764
+[OK] ScreenMiiTouch | Size: 0x350 | Inline Wrapper: 7100a7b7dc
+[OK] ScreenMiiTouchMenu | Size: 0x4A0 | Inline Wrapper: 7100a7bbc0
+[OK] ScreenMiiTouchProfileCard | Size: 0x640 | Constructor: 710094c59c
+[OK] ScreenMiiTouchSpray | Size: 0x360 | Inline Wrapper: 7100a7be44
+[OK] ScreenMiniGameBowling | Size: 0x350 | Inline Wrapper: 71020e9974
+[OK] ScreenMiniGameCafeLatte | Size: 0x348 | Inline Wrapper: 71020ea04c
+[OK] ScreenMiniGameDaruma | Size: 0x350 | Inline Wrapper: 71020ea868
+[OK] ScreenMiniGameFader | Size: 0x388 | Inline Wrapper: 7100a7c018
+[OK] ScreenMiniGameFall | Size: 0x350 | Inline Wrapper: 71020eb0a8
+[OK] ScreenMiniGameFindDifferences | Size: 0x358 | Inline Wrapper: 71020eb83c
+[OK] ScreenMiniGamePictQuiz | Size: 0xF80 | Constructor: 71020ede3c
+[OK] ScreenMiniGamePrizeBox | Size: 0x348 | Inline Wrapper: 7100a7c1d8
+[OK] ScreenMiniGameSwapCup | Size: 0x350 | Inline Wrapper: 71020ee95c
+[OK] ScreenMoneyBottom | Size: 0x358 | Inline Wrapper: 7100a7c2b8
+[OK] ScreenOptionEntrance | Size: 0x348 | Inline Wrapper: 7100a7c3fc
+[OK] ScreenOptionSetting | Size: 0x3C0 | Constructor: 71008c9e68
+[OK] ScreenPetitPersonalityEdit | Size: 0x1688 | Constructor: 710090a4e4
+[OK] ScreenPhotoStudio | Size: 0x2CC6A8 | Constructor: 71020f6860
+[OK] ScreenPhotoStudioContent | Size: 0x2C94E0
+[OK] ScreenPhotoStudioMiiList | Size: 0xAE0 | Constructor: 710210957c
+[OK] ScreenPhraseEditNew | Size: 0x1550 | Constructor: 710094dba4
+[OK] ScreenPlayerBirthdayED | Size: 0x3A0 | Inline Wrapper: 710210e430
+[OK] ScreenPlayerSetting | Size: 0x398 | Inline Wrapper: 7100a7d37c
+[OK] ScreenPlayerSkinEdit | Size: 0x350 | Inline Wrapper: 7100a7d518
+[OK] ScreenPointing | Size: 0x4B8 | Constructor: 71008ef8e8
+[OK] ScreenPresetTextEntry | Size: 0x880 | Constructor: 71008e5620
+[OK] ScreenProposalShooter | Size: 0x4F0 | Constructor: 7102116ca8
+[OK] ScreenRelationDiagram | Size: 0x3B8 | Inline Wrapper: 710211930c
+[OK] ScreenRelationGraphFocusSingle | Size: 0x2478 | Constructor: 710090d870
+[OK] ScreenRelationGraphMulti | Size: 0x6B0 | Constructor: 71008f069c
+[OK] ScreenRelationNameEdit | Size: 0x40D0 | Constructor: 7100913a70
+[OK] ScreenRelationshipsRanking | Size: 0x14F0 | Inline Wrapper: 710095b938
+[OK] ScreenResidentList | Size: 0x1118 | Constructor: 71009026d8
+[OK] ScreenRocketSwitch | Size: 0x348 | Inline Wrapper: 710212f328
+[OK] ScreenRoomSelect | Size: 0x3F8 | Inline Wrapper: 7100a7efa4
+[OK] ScreenSceneFader | Size: 0x428 | Constructor: 71008f482c
+[OK] ScreenSettingDialog | Size: 0x400 | Constructor: 71008e6670
+[OK] ScreenShopCartNum | Size: 0x358 | Inline Wrapper: 71021318f4
+[OK] ScreenShopConfirm | Size: 0x378 | Inline Wrapper: 7100a7f67c
+[OK] ScreenShopFade | Size: 0x358 | Inline Wrapper: 7100a7f7a8
+[OK] FOUND_NO_SCREEN_NAME | Size: 0x4D0 | Constructor: 710089710c
+[ERR] FOUND_NO_SCREEN_NAME | VTable: 710326d2c0 | FOUND NOTHING WITH MANUAL CHECK
+[OK] FOUND_NO_SCREEN_NAME | Size: 0x9D10 | Constructor: 71020a963c
+[OK] ScreenStaffRoll | Size: 0x2E98 | Constructor: 710214374c
+[OK] ScreenTalkChoice | Size: 0x350 | Constructor: 7100a7fc7c
+[OK] ScreenTalkChoiceFocus | Size: 0x350 | Inline Wrapper: 7100a7fccc
+[OK] ScreenTalkGauge | Size: 0x470 | Constructor: 71008ee648
+[OK] ScreenTelopBottom | Size: 0x3F0 | Constructor: 710094f878
+[OK] ScreenTitle | Size: 0xFD8 | Constructor: 71008a8884
+[OK] ScreenTravelCameraFrame | Size: 0x348 | Inline Wrapper: 7102146690
+[OK] ScreenTravelMiiSelect | Size: 0x7E0 | Constructor: 7100a8093c
+[OK] ScreenTravelPhotoResult | Size: 0x440 | Constructor: 7102147de4
+[OK] ScreenTravelStart | Size: 0x3CE0 | Constructor: 71008dac98
+[OK] ScreenTutorialHighlight | Size: 0x398 | Inline Wrapper: 7100a80ab8
+[OK] ScreenUgcTextList | Size: 0x4D40 | Constructor: 710093826c
+[OK] ScreenWordEditTop | Size: 0x368 | Inline Wrapper: 7100a81acc
+[OK] Viewer | Size: 0x538 | Constructor: 710076e8c4
+[OK] MiniGame_Change | Size: 0x538 | Constructor: 710076e8c4
