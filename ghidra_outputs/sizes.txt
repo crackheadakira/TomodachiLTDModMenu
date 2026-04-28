@@ -63,10 +63,10 @@
 [OK] ScreenAccidentHandSidePush | Size: 0x3C8 | Constructor: 710207a4b4
 [OK] ScreenAccidentHandStrokeRight | Size: 0x430 | Constructor: 710207a5c4
 [OK] ScreenAccidentHandStrokeLeft | Size: 0x430 | Inline Wrapper: 710207a580
-[OK] ScreenBungeeHandPush | Size: 0x430 | Inline Wrapper: 710207a6ec
-[OK] ScreenEventHandGood | Size: 0x358 | Inline Wrapper: 710207a760
-[OK] ScreenEventHandClap | Size: 0x358 | Inline Wrapper: 710207a7dc
-[OK] FOUND_NO_SCREEN_NAME | Size: 0x358 | Inline Wrapper: 710207a858
+[OK] ScreenBungeeHandPush | Size: 0x358 | Inline Wrapper: 710207a6ec
+[OK] ScreenEventHandGood | Size: 0x358 | Inline Wrapper: 710207a7dc
+[OK] ScreenEventHandClap | Size: 0x358 | Inline Wrapper: 710207a858
+[ERR] FOUND_NO_SCREEN_NAME | FOUND NOTHING WITH MANUAL CHECK
 [OK] ScreenDemoNewsCaster | Size: 0xEE8 | Inline Wrapper: 710207b07c
 [OK] ScreenDemoPicture | Size: 0x378 | Constructor: 7100a74f98
 [OK] ScreenDemoSelectBtn | Size: 0x2358 | Constructor: 71008fb004
