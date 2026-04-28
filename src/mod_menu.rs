@@ -1256,10 +1256,11 @@ extern "C" fn mod_menu_unk_0x490(this: u64, param_2: u32) {
         }
 
         let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
-        let close_start_2: extern "C" fn(u64, i32, u8) = std::mem::transmute(text_base + 0x215bcec);
+        let set_component_state: extern "C" fn(u64, i32, u8) =
+            std::mem::transmute(text_base + 0x215bcec);
 
         for i in 0..count {
-            close_start_2(this, i, (param_2 & 1) as u8);
+            set_component_state(this, i, (param_2 & 1) as u8);
         }
     }
 }
