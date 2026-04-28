@@ -205,4 +205,3 @@ VTable: 71032729c8 | Entries: 145 | ScreenName: ScreenTutorialHighlight
 VTable: 7103272f88 | Entries: 145 | ScreenName: ScreenUgcTextList
 VTable: 7103273788 | Entries: 145 | ScreenName: ScreenWordEditTop
 VTable: 71032742c8 | Entries: 145 | ScreenName: Viewer
-VTable: 71032742c8 | Entries: 145 | ScreenName: MiniGame_Change
