@@ -103,7 +103,33 @@ extern "C" fn state_88_enter(context: u64) {
 
 extern "C" fn state_88_execute(context: u64) {
     unsafe {
-        *((context + 0x20) as *mut i32) = 0;
+        let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
+
+        // 1. Get the manager pointer from context + 0xa8
+        // We treat it as a pointer to a pointer (*const *const u64)
+        let manager_ptr_ptr = (context + 0xa8) as *const *const u64;
+
+        if !manager_ptr_ptr.is_null() {
+            let manager = *manager_ptr_ptr; // This is now a *const u64
+
+            if !manager.is_null() {
+                // --- HEARTBEAT ---
+                // Transmute the u64 address of the update function
+                let ui_update_fn: extern "C" fn(u64) = std::mem::transmute(text_base + 0x1fa49b4);
+
+                // Call it with the manager (cast back to u64 for the function arg)
+                ui_update_fn(manager as u64);
+
+                // --- READINESS CHECK ---
+                // To check offset 0xc90, cast manager to a *const u8 so .add() moves in bytes
+                let ready_flag_ptr = (manager as *const u8).add(0xc90);
+                if *ready_flag_ptr == 0 {
+                    return; // Assets not ready, skip logic
+                }
+            }
+        }
+
+        // ... rest of your logic
     }
 }
 
@@ -167,7 +193,7 @@ pub fn main() {
     fsm_ext::init();
 
     skyline::install_hooks!(build_scene_controller, crate::mod_menu::capture_screen_heap);
-    fsm_ext::register_menu(0x88, Some(state_88_enter), None, None);
+    fsm_ext::register_menu(0x88, Some(state_88_enter), Some(state_88_execute), None);
 
     install_buttons! {
         "Island_Menu_00", "L_ResidentList_00" => test_spawn_mod_menu,

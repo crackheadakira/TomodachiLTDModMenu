@@ -1,208 +1,208 @@
-VTable: 71031c6c18 | ScreenName: ScreenEditorCommonBg
-VTable: 71031c7190 | ScreenName: ScreenEditorCommonInfoOperation
-VTable: 71031c7708 | ScreenName: ScreenEditorCommonTitle
-VTable: 71031c7ce0 | ScreenName: ScreenEditorCommonTutorial
-VTable: 71031c8710 | ScreenName: ScreenEditorSmallDialog
-VTable: 71031cf658 | ScreenName: ScreenIslandEditor
-VTable: 71031d1380 | ScreenName: ScreenMiiEditor
-VTable: 71031d1928 | ScreenName: ScreenMiiEditorBg
-VTable: 71031d1e70 | ScreenName: ScreenMiiEditorBodyType
-VTable: 71031d2420 | ScreenName: ScreenMiiEditorConfirm
-VTable: 71031d2998 | ScreenName: ScreenMiiEditorEasy
-VTable: 71031d2f10 | ScreenName: ScreenMiiEditorEasyCompare
-VTable: 71031d34f8 | ScreenName: ScreenMiiEditorEasyCompareDialog
-VTable: 71031d3aa8 | ScreenName: ScreenMiiEditorEasyComplete
-VTable: 71031d4098 | ScreenName: ScreenMiiEditorMenu
-VTable: 71031d4e90 | ScreenName: ScreenMiiEditorPreview
-VTable: 71031d5408 | ScreenName: ScreenMiiEditorSwitchMiiList
-VTable: 71031d5a28 | ScreenName: ScreenMiiEditorTop
-VTable: 71031d6b20 | ScreenName: ScreenTestEditor
-VTable: 71031d9418 | ScreenName: ScreenUgcAtelier
-VTable: 71031d9990 | ScreenName: ScreenUgcEditor
-VTable: 71031d9fb0 | ScreenName: ScreenUgcEditorBg
-VTable: 71031da528 | ScreenName: ScreenUgcEditorComplete
-VTable: 71031dae60 | ScreenName: ScreenUgcEditorDetail
-VTable: 71031db3d8 | ScreenName: ScreenUgcEditorDrawMenu
-VTable: 71031dba28 | ScreenName: ScreenUgcEditorFirstHalfMenu
-VTable: 71031dc0e8 | ScreenName: ScreenUgcEditorLatterHalfMenu
-VTable: 71031dc778 | ScreenName: ScreenUgcEditorStampList
-VTable: 71031dcdd0 | ScreenName: ScreenUgcListAll
-VTable: 710320bb20 | ScreenName: ScreenLocalNetworkDialogOverwrite
-VTable: 710320c098 | ScreenName: ScreenLocalNetworkDialogSend
-VTable: 710320c610 | ScreenName: ScreenLocalNetworkMenu
-VTable: 710322fb50 | ScreenName: Screen3DControl
-VTable: 7103230098 | ScreenName: Screen3DLayout
-VTable: 71032305e0 | ScreenName: Screen3DLayoutFront
-VTable: 7103230b28 | ScreenName: Screen3DLayoutOnCursor
-VTable: 7103231258 | ScreenName: ScreenAdviceRight
-VTable: 71032317f8 | ScreenName: ScreenBoxCursor
-VTable: 7103231d70 | ScreenName: ScreenCantTouch
-VTable: 71032322e8 | ScreenName: ScreenCapturePhoto
-VTable: 71032328b0 | ScreenName: ScreenChangeClothes
-VTable: 71032330e0 | ScreenName: ScreenCinemaScope
-VTable: 7103233658 | ScreenName: ScreenClothesEditorBase
-VTable: 7103233f90 | ScreenName: ScreenCommon
-VTable: 7103234508 | ScreenName: UICommonScreen
-VTable: 7103234a50 | ScreenName: ScreenCommonSystemBtnBase
-VTable: 7103234fb0 | ScreenName: ScreenCommonBackBtn
-VTable: 7103235570 | ScreenName: ScreenCommonBackBtnHandler
-VTable: 7103235ae8 | ScreenName: ScreenCommonFooterBase
-VTable: 7103236038 | ScreenName: ScreenCommonIslandFooter
-VTable: 7103236588 | ScreenName: ScreenCommonMenuFooter
-VTable: 7103236b80 | ScreenName: ScreenCommonMenuBG
-VTable: 7103237128 | ScreenName: ScreenCommonMenuBtn
-VTable: 7103237688 | ScreenName: ScreenCommonSkip
-VTable: 7103237c00 | ScreenName: ScreenConfessionAdvice
-VTable: 7103238210 | ScreenName: ScreenControlDisabler
-VTable: 7103238758 | ScreenName: ScreenDemoCapture
-VTable: 7103238d00 | ScreenName: ScreenDemoFaderBase
-VTable: 7103239310 | ScreenName: ScreenDemoFaderDrama
-VTable: 7103239998 | ScreenName: ScreenDemoFaderSimple
-VTable: 7103239f78 | ScreenName: ScreenAccidentHandPick
-VTable: 710323a4c8 | ScreenName: ScreenAccidentHandSidePush
-VTable: 710323aa18 | ScreenName: ScreenAccidentHandStrokeRight
-VTable: 710323af70 | ScreenName: ScreenAccidentHandStrokeLeft
-VTable: 710323b4c8 | ScreenName: ScreenBungeeHandPush
-VTable: 710323ba20 | ScreenName: ScreenEventHandGood
-VTable: 710323bf70 | ScreenName: ScreenEventHandClap
-VTable: 710323c4c0 | ScreenName: FOUND_NO_SCREEN_NAME
-VTable: 710323cc58 | ScreenName: ScreenDemoNewsCaster
-VTable: 710323d1f8 | ScreenName: ScreenDemoPicture
-VTable: 710323d7a0 | ScreenName: ScreenDemoSelectBtn
-VTable: 710323de08 | ScreenName: ScreenDemoSlider
-VTable: 710323e390 | ScreenName: ScreenDialog
-VTable: 710323ea30 | ScreenName: ScreenDialogShopBuy
-VTable: 710323efd8 | ScreenName: ScreenDreamCommon
-VTable: 710323f520 | ScreenName: ScreenDreamFader
-VTable: 710323fb78 | ScreenName: ScreenEditPronoun
-VTable: 7103240140 | ScreenName: ScreenEmotionBottle
-VTable: 7103240740 | ScreenName: ScreenEncyclopediaBg
-VTable: 7103240cb8 | ScreenName: ScreenEncyclopediaItem
-VTable: 7103241230 | ScreenName: ScreenEncyclopediaList
-VTable: 7103241970 | ScreenName: ScreenEncyclopediaMenu
-VTable: 7103241ee8 | ScreenName: ScreenFadeWipe
-VTable: 7103242490 | ScreenName: ScreenFadeWipeBehind
-VTable: 7103242a38 | ScreenName: ScreenFadeWipeInDemo
-VTable: 7103243168 | ScreenName: ScreenFirstBootSetting
-VTable: 7103243790 | ScreenName: ScreenFirstTutorial
-VTable: 7103243e68 | ScreenName: ScreenFountainDonationDialog
-VTable: 71032443e0 | ScreenName: ScreenFountainDonationHand
-VTable: 7103244958 | ScreenName: ScreenFountainWishBg
-VTable: 7103244f40 | ScreenName: ScreenFountainWishDialog
-VTable: 71032454b8 | ScreenName: ScreenFountainWishLiberation
-VTable: 7103245a30 | ScreenName: ScreenFountainWishList
-VTable: 7103246088 | ScreenName: ScreenFountainWishMenu
-VTable: 7103246600 | ScreenName: ScreenGiveMoney
-VTable: 7103246b78 | ScreenName: ScreenGrowthPhoto
-VTable: 7103247108 | ScreenName: ScreenGrowthPhotoForCapture
-VTable: 7103247680 | ScreenName: ScreenHouseList
-VTable: 7103247cc0 | ScreenName: ScreenHouseMenu
-VTable: 7103248320 | ScreenName: ScreenHouseRenovation
-VTable: 7103248998 | ScreenName: ScreenInlineKeyboard
-VTable: 71032490b8 | ScreenName: ScreenIntroductionDialog
-VTable: 7103249660 | ScreenName: ScreenIntroductionTelop
-VTable: 7103249be0 | ScreenName: ScreenIntroductionTelopFront
-VTable: 710324a158 | ScreenName: ScreenIsland
-VTable: 710324a6d0 | ScreenName: ScreenIslandAttentionBtn
-VTable: 710324ac58 | ScreenName: ScreenIslandEntranceInfo
-VTable: 710324b208 | ScreenName: ScreenIslandInfo
-VTable: 710324b838 | ScreenName: ScreenIslandInfoDetail
-VTable: 710324be28 | ScreenName: ScreenIslandLevelUp
-VTable: 710324c440 | ScreenName: ScreenIslandMenu
-VTable: 710324c9d0 | ScreenName: FOUND_NO_SCREEN_NAME
-VTable: 710324d270 | ScreenName: ScreenItemListPawnShop
-VTable: 710324db78 | ScreenName: ScreenItemListPlayer
-VTable: 710324e398 | ScreenName: ScreenItemListShopBuilding
-VTable: 710324ec50 | ScreenName: ScreenItemListShopCloth
-VTable: 710324f660 | ScreenName: ScreenItemListShopFood
-VTable: 710324ff18 | ScreenName: ScreenItemListShopGoods
-VTable: 71032507d0 | ScreenName: ScreenItemListShopInterior
-VTable: 7103251178 | ScreenName: ScreenItemListTop
-VTable: 7103251728 | ScreenName: ScreenItemNew
-VTable: 7103251ca0 | ScreenName: ScreenLevelUpClothesPresent
-VTable: 7103252640 | ScreenName: ScreenLevelUpPresent
-VTable: 7103252de8 | ScreenName: ScreenLevelUpPresentBg
-VTable: 71032533b8 | ScreenName: ScreenLiveTogetherList
-VTable: 71032539f8 | ScreenName: ScreenMakeClothes
-VTable: 7103254010 | ScreenName: ScreenMarket
-VTable: 7103254720 | ScreenName: ScreenMiiBrain
-VTable: 7103254cc8 | ScreenName: ScreenMiiBrainForDemoBG
-VTable: 7103255290 | ScreenName: ScreenMiiCharacter
-VTable: 7103255820 | ScreenName: ScreenMiiCharDetail
-VTable: 7103255e68 | ScreenName: ScreenMiiCharDistribution
-VTable: 7103256400 | ScreenName: ScreenMiiEventTelop
-VTable: 7103256978 | ScreenName: ScreenMiiFavoriteFoodList
-VTable: 7103256f40 | ScreenName: ScreenMiiFocusChoice
-VTable: 71032574c8 | ScreenName: ScreenMiiGoodsSlotList
-VTable: 7103257ab8 | ScreenName: ScreenMiiList
-VTable: 7103258120 | ScreenName: ScreenMiiNewsBase
-VTable: 71032586b8 | ScreenName: ScreenMiiNewsBreakingComplete
-VTable: 7103258d70 | ScreenName: ScreenMiiNewsBreakingContent
-VTable: 7103259400 | ScreenName: ScreenMiiNewsBreakingIslandDevelopment
-VTable: 7103259b08 | ScreenName: ScreenMiiNewsBreakingUgcMade
-VTable: 710325a238 | ScreenName: ScreenMiiNewsCaster
-VTable: 710325a9f8 | ScreenName: ScreenMiiNewsContent
-VTable: 710325b0c0 | ScreenName: FOUND_NO_SCREEN_NAME
-VTable: 710325b728 | ScreenName: ScreenMiiNewsFade
-VTable: 710325bdb0 | ScreenName: ScreenMiiNewsInterview
-VTable: 710325c490 | ScreenName: ScreenMiiNewsListFade
-VTable: 710325c9d8 | ScreenName: ScreenMiiStomach
-VTable: 710325cfc8 | ScreenName: ScreenMiiStomachForDemoBG
-VTable: 710325d660 | ScreenName: ScreenMiiTouch
-VTable: 710325dc38 | ScreenName: ScreenMiiTouchMenu
-VTable: 710325e1c8 | ScreenName: ScreenMiiTouchProfileCard
-VTable: 710325e860 | ScreenName: ScreenMiiTouchSpray
-VTable: 710325edf0 | ScreenName: ScreenMiniGameBowling
-VTable: 710325f368 | ScreenName: ScreenMiniGameCafeLatte
-VTable: 710325f910 | ScreenName: ScreenMiniGameDaruma
-VTable: 710325ff08 | ScreenName: ScreenMiniGameFader
-VTable: 71032605a8 | ScreenName: ScreenMiniGameFall
-VTable: 7103260b20 | ScreenName: ScreenMiniGameFindDifferences
-VTable: 7103261108 | ScreenName: ScreenMiniGamePictQuiz
-VTable: 71032616e8 | ScreenName: ScreenMiniGamePrizeBox
-VTable: 7103261c60 | ScreenName: ScreenMiniGameSwapCup
-VTable: 71032621d8 | ScreenName: ScreenMoneyBottom
-VTable: 7103262750 | ScreenName: ScreenOptionEntrance
-VTable: 7103262cf0 | ScreenName: ScreenOptionSetting
-VTable: 71032632e8 | ScreenName: ScreenPetitPersonalityEdit
-VTable: 7103263bf8 | ScreenName: ScreenPhotoStudio
-VTable: 71032645e8 | ScreenName: ScreenPhotoStudioContent
-VTable: 7103264b90 | ScreenName: ScreenPhotoStudioMiiList
-VTable: 7103265218 | ScreenName: ScreenPhraseEditNew
-VTable: 7103265b08 | ScreenName: ScreenPlayerBirthdayED
-VTable: 71032660d0 | ScreenName: ScreenPlayerSetting
-VTable: 7103266680 | ScreenName: ScreenPlayerSkinEdit
-VTable: 7103266bf8 | ScreenName: ScreenPointing
-VTable: 7103267170 | ScreenName: ScreenPresetTextEntry
-VTable: 7103267778 | ScreenName: ScreenProposalShooter
-VTable: 7103267db8 | ScreenName: ScreenRelationDiagram
-VTable: 7103268330 | ScreenName: ScreenRelationGraphFocusSingle
-VTable: 7103268980 | ScreenName: ScreenRelationGraphMulti
-VTable: 7103269068 | ScreenName: ScreenRelationNameEdit
-VTable: 7103269860 | ScreenName: ScreenRelationshipsRanking
-VTable: 7103269f28 | ScreenName: ScreenResidentList
-VTable: 710326a558 | ScreenName: ScreenRocketSwitch
-VTable: 710326ab00 | ScreenName: ScreenRoomSelect
-VTable: 710326b088 | ScreenName: ScreenSceneFader
-VTable: 710326b6b8 | ScreenName: ScreenSettingDialog
-VTable: 710326bc98 | ScreenName: ScreenShopCartNum
-VTable: 710326c210 | ScreenName: ScreenShopConfirm
-VTable: 710326c7b0 | ScreenName: ScreenShopFade
-VTable: 710326cd60 | ScreenName: FOUND_NO_SCREEN_NAME
-VTable: 710326d2c0 | ScreenName: FOUND_NO_SCREEN_NAME
-VTable: 710326dc68 | ScreenName: FOUND_NO_SCREEN_NAME
-VTable: 710326e6e0 | ScreenName: ScreenStaffRoll
-VTable: 710326f468 | ScreenName: ScreenTalkChoice
-VTable: 710326f9b0 | ScreenName: ScreenTalkChoiceFocus
-VTable: 710326ffb0 | ScreenName: ScreenTalkGauge
-VTable: 7103270528 | ScreenName: ScreenTelopBottom
-VTable: 7103270af8 | ScreenName: ScreenTitle
-VTable: 71032711a0 | ScreenName: ScreenTravelCameraFrame
-VTable: 71032717e8 | ScreenName: ScreenTravelMiiSelect
-VTable: 7103271de8 | ScreenName: ScreenTravelPhotoResult
-VTable: 71032723b0 | ScreenName: ScreenTravelStart
-VTable: 71032729c8 | ScreenName: ScreenTutorialHighlight
-VTable: 7103272f88 | ScreenName: ScreenUgcTextList
-VTable: 7103273788 | ScreenName: ScreenWordEditTop
-VTable: 71032742c8 | ScreenName: Viewer
-VTable: 71032742c8 | ScreenName: MiniGame_Change
+VTable: 71031c6c18 | Entries: 145 | ScreenName: ScreenEditorCommonBg
+VTable: 71031c7190 | Entries: 145 | ScreenName: ScreenEditorCommonInfoOperation
+VTable: 71031c7708 | Entries: 145 | ScreenName: ScreenEditorCommonTitle
+VTable: 71031c7ce0 | Entries: 145 | ScreenName: ScreenEditorCommonTutorial
+VTable: 71031c8710 | Entries: 145 | ScreenName: ScreenEditorSmallDialog
+VTable: 71031cf658 | Entries: 145 | ScreenName: ScreenIslandEditor
+VTable: 71031d1380 | Entries: 145 | ScreenName: ScreenMiiEditor
+VTable: 71031d1928 | Entries: 145 | ScreenName: ScreenMiiEditorBg
+VTable: 71031d1e70 | Entries: 145 | ScreenName: ScreenMiiEditorBodyType
+VTable: 71031d2420 | Entries: 145 | ScreenName: ScreenMiiEditorConfirm
+VTable: 71031d2998 | Entries: 145 | ScreenName: ScreenMiiEditorEasy
+VTable: 71031d2f10 | Entries: 145 | ScreenName: ScreenMiiEditorEasyCompare
+VTable: 71031d34f8 | Entries: 145 | ScreenName: ScreenMiiEditorEasyCompareDialog
+VTable: 71031d3aa8 | Entries: 145 | ScreenName: ScreenMiiEditorEasyComplete
+VTable: 71031d4098 | Entries: 145 | ScreenName: ScreenMiiEditorMenu
+VTable: 71031d4e90 | Entries: 145 | ScreenName: ScreenMiiEditorPreview
+VTable: 71031d5408 | Entries: 145 | ScreenName: ScreenMiiEditorSwitchMiiList
+VTable: 71031d5a28 | Entries: 109 | ScreenName: ScreenMiiEditorTop
+VTable: 71031d6b20 | Entries: 145 | ScreenName: ScreenTestEditor
+VTable: 71031d9418 | Entries: 145 | ScreenName: ScreenUgcAtelier
+VTable: 71031d9990 | Entries: 145 | ScreenName: ScreenUgcEditor
+VTable: 71031d9fb0 | Entries: 145 | ScreenName: ScreenUgcEditorBg
+VTable: 71031da528 | Entries: 148 | ScreenName: ScreenUgcEditorComplete
+VTable: 71031dae60 | Entries: 145 | ScreenName: ScreenUgcEditorDetail
+VTable: 71031db3d8 | Entries: 145 | ScreenName: ScreenUgcEditorDrawMenu
+VTable: 71031dba28 | Entries: 145 | ScreenName: ScreenUgcEditorFirstHalfMenu
+VTable: 71031dc0e8 | Entries: 145 | ScreenName: ScreenUgcEditorLatterHalfMenu
+VTable: 71031dc778 | Entries: 145 | ScreenName: ScreenUgcEditorStampList
+VTable: 71031dcdd0 | Entries: 145 | ScreenName: ScreenUgcListAll
+VTable: 710320bb20 | Entries: 145 | ScreenName: ScreenLocalNetworkDialogOverwrite
+VTable: 710320c098 | Entries: 145 | ScreenName: ScreenLocalNetworkDialogSend
+VTable: 710320c610 | Entries: 145 | ScreenName: ScreenLocalNetworkMenu
+VTable: 710322fb50 | Entries: 145 | ScreenName: Screen3DControl
+VTable: 7103230098 | Entries: 145 | ScreenName: Screen3DLayout
+VTable: 71032305e0 | Entries: 145 | ScreenName: Screen3DLayoutFront
+VTable: 7103230b28 | Entries: 145 | ScreenName: Screen3DLayoutOnCursor
+VTable: 7103231258 | Entries: 145 | ScreenName: ScreenAdviceRight
+VTable: 71032317f8 | Entries: 145 | ScreenName: ScreenBoxCursor
+VTable: 7103231d70 | Entries: 145 | ScreenName: ScreenCantTouch
+VTable: 71032322e8 | Entries: 145 | ScreenName: ScreenCapturePhoto
+VTable: 71032328b0 | Entries: 220 | ScreenName: ScreenChangeClothes
+VTable: 71032330e0 | Entries: 145 | ScreenName: ScreenCinemaScope
+VTable: 7103233658 | Entries: 220 | ScreenName: ScreenClothesEditorBase
+VTable: 7103233f90 | Entries: 145 | ScreenName: ScreenCommon
+VTable: 7103234508 | Entries: 145 | ScreenName: UICommonScreen
+VTable: 7103234a50 | Entries: 148 | ScreenName: ScreenCommonSystemBtnBase
+VTable: 7103234fb0 | Entries: 148 | ScreenName: ScreenCommonBackBtn
+VTable: 7103235570 | Entries: 145 | ScreenName: ScreenCommonBackBtnHandler
+VTable: 7103235ae8 | Entries: 146 | ScreenName: ScreenCommonFooterBase
+VTable: 7103236038 | Entries: 146 | ScreenName: ScreenCommonIslandFooter
+VTable: 7103236588 | Entries: 146 | ScreenName: ScreenCommonMenuFooter
+VTable: 7103236b80 | Entries: 145 | ScreenName: ScreenCommonMenuBG
+VTable: 7103237128 | Entries: 148 | ScreenName: ScreenCommonMenuBtn
+VTable: 7103237688 | Entries: 145 | ScreenName: ScreenCommonSkip
+VTable: 7103237c00 | Entries: 145 | ScreenName: ScreenConfessionAdvice
+VTable: 7103238210 | Entries: 145 | ScreenName: ScreenControlDisabler
+VTable: 7103238758 | Entries: 145 | ScreenName: ScreenDemoCapture
+VTable: 7103238d00 | Entries: 156 | ScreenName: ScreenDemoFaderBase
+VTable: 7103239310 | Entries: 156 | ScreenName: ScreenDemoFaderDrama
+VTable: 7103239998 | Entries: 156 | ScreenName: ScreenDemoFaderSimple
+VTable: 7103239f78 | Entries: 146 | ScreenName: ScreenAccidentHandPick
+VTable: 710323a4c8 | Entries: 146 | ScreenName: ScreenAccidentHandSidePush
+VTable: 710323aa18 | Entries: 146 | ScreenName: ScreenAccidentHandStrokeRight
+VTable: 710323af70 | Entries: 147 | ScreenName: ScreenAccidentHandStrokeLeft
+VTable: 710323b4c8 | Entries: 147 | ScreenName: ScreenBungeeHandPush
+VTable: 710323ba20 | Entries: 146 | ScreenName: ScreenEventHandGood
+VTable: 710323bf70 | Entries: 146 | ScreenName: ScreenEventHandClap
+VTable: 710323c4c0 | Entries: 146 | ScreenName: FOUND_NO_SCREEN_NAME
+VTable: 710323cc58 | Entries: 145 | ScreenName: ScreenDemoNewsCaster
+VTable: 710323d1f8 | Entries: 145 | ScreenName: ScreenDemoPicture
+VTable: 710323d7a0 | Entries: 145 | ScreenName: ScreenDemoSelectBtn
+VTable: 710323de08 | Entries: 145 | ScreenName: ScreenDemoSlider
+VTable: 710323e390 | Entries: 149 | ScreenName: ScreenDialog
+VTable: 710323ea30 | Entries: 145 | ScreenName: ScreenDialogShopBuy
+VTable: 710323efd8 | Entries: 145 | ScreenName: ScreenDreamCommon
+VTable: 710323f520 | Entries: 156 | ScreenName: ScreenDreamFader
+VTable: 710323fb78 | Entries: 145 | ScreenName: ScreenEditPronoun
+VTable: 7103240140 | Entries: 145 | ScreenName: ScreenEmotionBottle
+VTable: 7103240740 | Entries: 145 | ScreenName: ScreenEncyclopediaBg
+VTable: 7103240cb8 | Entries: 145 | ScreenName: ScreenEncyclopediaItem
+VTable: 7103241230 | Entries: 145 | ScreenName: ScreenEncyclopediaList
+VTable: 7103241970 | Entries: 145 | ScreenName: ScreenEncyclopediaMenu
+VTable: 7103241ee8 | Entries: 149 | ScreenName: ScreenFadeWipe
+VTable: 7103242490 | Entries: 149 | ScreenName: ScreenFadeWipeBehind
+VTable: 7103242a38 | Entries: 149 | ScreenName: ScreenFadeWipeInDemo
+VTable: 7103243168 | Entries: 145 | ScreenName: ScreenFirstBootSetting
+VTable: 7103243790 | Entries: 145 | ScreenName: ScreenFirstTutorial
+VTable: 7103243e68 | Entries: 145 | ScreenName: ScreenFountainDonationDialog
+VTable: 71032443e0 | Entries: 145 | ScreenName: ScreenFountainDonationHand
+VTable: 7103244958 | Entries: 145 | ScreenName: ScreenFountainWishBg
+VTable: 7103244f40 | Entries: 145 | ScreenName: ScreenFountainWishDialog
+VTable: 71032454b8 | Entries: 145 | ScreenName: ScreenFountainWishLiberation
+VTable: 7103245a30 | Entries: 145 | ScreenName: ScreenFountainWishList
+VTable: 7103246088 | Entries: 145 | ScreenName: ScreenFountainWishMenu
+VTable: 7103246600 | Entries: 145 | ScreenName: ScreenGiveMoney
+VTable: 7103246b78 | Entries: 145 | ScreenName: ScreenGrowthPhoto
+VTable: 7103247108 | Entries: 145 | ScreenName: ScreenGrowthPhotoForCapture
+VTable: 7103247680 | Entries: 145 | ScreenName: ScreenHouseList
+VTable: 7103247cc0 | Entries: 145 | ScreenName: ScreenHouseMenu
+VTable: 7103248320 | Entries: 145 | ScreenName: ScreenHouseRenovation
+VTable: 7103248998 | Entries: 145 | ScreenName: ScreenInlineKeyboard
+VTable: 71032490b8 | Entries: 145 | ScreenName: ScreenIntroductionDialog
+VTable: 7103249660 | Entries: 145 | ScreenName: ScreenIntroductionTelop
+VTable: 7103249be0 | Entries: 145 | ScreenName: ScreenIntroductionTelopFront
+VTable: 710324a158 | Entries: 145 | ScreenName: ScreenIsland
+VTable: 710324a6d0 | Entries: 145 | ScreenName: ScreenIslandAttentionBtn
+VTable: 710324ac58 | Entries: 145 | ScreenName: ScreenIslandEntranceInfo
+VTable: 710324b208 | Entries: 145 | ScreenName: ScreenIslandInfo
+VTable: 710324b838 | Entries: 145 | ScreenName: ScreenIslandInfoDetail
+VTable: 710324be28 | Entries: 145 | ScreenName: ScreenIslandLevelUp
+VTable: 710324c440 | Entries: 148 | ScreenName: ScreenIslandMenu
+VTable: 710324c9d0 | Entries: 200 | ScreenName: FOUND_NO_SCREEN_NAME
+VTable: 710324d270 | Entries: 250 | ScreenName: ScreenItemListPawnShop
+VTable: 710324db78 | Entries: 218 | ScreenName: ScreenItemListPlayer
+VTable: 710324e398 | Entries: 249 | ScreenName: ScreenItemListShopBuilding
+VTable: 710324ec50 | Entries: 252 | ScreenName: ScreenItemListShopCloth
+VTable: 710324f660 | Entries: 249 | ScreenName: ScreenItemListShopFood
+VTable: 710324ff18 | Entries: 249 | ScreenName: ScreenItemListShopGoods
+VTable: 71032507d0 | Entries: 252 | ScreenName: ScreenItemListShopInterior
+VTable: 7103251178 | Entries: 145 | ScreenName: ScreenItemListTop
+VTable: 7103251728 | Entries: 145 | ScreenName: ScreenItemNew
+VTable: 7103251ca0 | Entries: 254 | ScreenName: ScreenLevelUpClothesPresent
+VTable: 7103252640 | Entries: 145 | ScreenName: ScreenLevelUpPresent
+VTable: 7103252de8 | Entries: 145 | ScreenName: ScreenLevelUpPresentBg
+VTable: 71032533b8 | Entries: 145 | ScreenName: ScreenLiveTogetherList
+VTable: 71032539f8 | Entries: 145 | ScreenName: ScreenMakeClothes
+VTable: 7103254010 | Entries: 145 | ScreenName: ScreenMarket
+VTable: 7103254720 | Entries: 145 | ScreenName: ScreenMiiBrain
+VTable: 7103254cc8 | Entries: 145 | ScreenName: ScreenMiiBrainForDemoBG
+VTable: 7103255290 | Entries: 145 | ScreenName: ScreenMiiCharacter
+VTable: 7103255820 | Entries: 145 | ScreenName: ScreenMiiCharDetail
+VTable: 7103255e68 | Entries: 145 | ScreenName: ScreenMiiCharDistribution
+VTable: 7103256400 | Entries: 145 | ScreenName: ScreenMiiEventTelop
+VTable: 7103256978 | Entries: 145 | ScreenName: ScreenMiiFavoriteFoodList
+VTable: 7103256f40 | Entries: 145 | ScreenName: ScreenMiiFocusChoice
+VTable: 71032574c8 | Entries: 145 | ScreenName: ScreenMiiGoodsSlotList
+VTable: 7103257ab8 | Entries: 145 | ScreenName: ScreenMiiList
+VTable: 7103258120 | Entries: 149 | ScreenName: ScreenMiiNewsBase
+VTable: 71032586b8 | Entries: 163 | ScreenName: ScreenMiiNewsBreakingComplete
+VTable: 7103258d70 | Entries: 158 | ScreenName: ScreenMiiNewsBreakingContent
+VTable: 7103259400 | Entries: 163 | ScreenName: ScreenMiiNewsBreakingIslandDevelopment
+VTable: 7103259b08 | Entries: 163 | ScreenName: ScreenMiiNewsBreakingUgcMade
+VTable: 710325a238 | Entries: 149 | ScreenName: ScreenMiiNewsCaster
+VTable: 710325a9f8 | Entries: 163 | ScreenName: ScreenMiiNewsContent
+VTable: 710325b0c0 | Entries: 150 | ScreenName: FOUND_NO_SCREEN_NAME
+VTable: 710325b728 | Entries: 145 | ScreenName: ScreenMiiNewsFade
+VTable: 710325bdb0 | Entries: 150 | ScreenName: ScreenMiiNewsInterview
+VTable: 710325c490 | Entries: 145 | ScreenName: ScreenMiiNewsListFade
+VTable: 710325c9d8 | Entries: 146 | ScreenName: ScreenMiiStomach
+VTable: 710325cfc8 | Entries: 146 | ScreenName: ScreenMiiStomachForDemoBG
+VTable: 710325d660 | Entries: 145 | ScreenName: ScreenMiiTouch
+VTable: 710325dc38 | Entries: 148 | ScreenName: ScreenMiiTouchMenu
+VTable: 710325e1c8 | Entries: 145 | ScreenName: ScreenMiiTouchProfileCard
+VTable: 710325e860 | Entries: 145 | ScreenName: ScreenMiiTouchSpray
+VTable: 710325edf0 | Entries: 145 | ScreenName: ScreenMiniGameBowling
+VTable: 710325f368 | Entries: 145 | ScreenName: ScreenMiniGameCafeLatte
+VTable: 710325f910 | Entries: 145 | ScreenName: ScreenMiniGameDaruma
+VTable: 710325ff08 | Entries: 157 | ScreenName: ScreenMiniGameFader
+VTable: 71032605a8 | Entries: 145 | ScreenName: ScreenMiniGameFall
+VTable: 7103260b20 | Entries: 145 | ScreenName: ScreenMiniGameFindDifferences
+VTable: 7103261108 | Entries: 145 | ScreenName: ScreenMiniGamePictQuiz
+VTable: 71032616e8 | Entries: 145 | ScreenName: ScreenMiniGamePrizeBox
+VTable: 7103261c60 | Entries: 145 | ScreenName: ScreenMiniGameSwapCup
+VTable: 71032621d8 | Entries: 145 | ScreenName: ScreenMoneyBottom
+VTable: 7103262750 | Entries: 145 | ScreenName: ScreenOptionEntrance
+VTable: 7103262cf0 | Entries: 145 | ScreenName: ScreenOptionSetting
+VTable: 71032632e8 | Entries: 145 | ScreenName: ScreenPetitPersonalityEdit
+VTable: 7103263bf8 | Entries: 145 | ScreenName: ScreenPhotoStudio
+VTable: 71032645e8 | Entries: 146 | ScreenName: ScreenPhotoStudioContent
+VTable: 7103264b90 | Entries: 145 | ScreenName: ScreenPhotoStudioMiiList
+VTable: 7103265218 | Entries: 145 | ScreenName: ScreenPhraseEditNew
+VTable: 7103265b08 | Entries: 145 | ScreenName: ScreenPlayerBirthdayED
+VTable: 71032660d0 | Entries: 145 | ScreenName: ScreenPlayerSetting
+VTable: 7103266680 | Entries: 145 | ScreenName: ScreenPlayerSkinEdit
+VTable: 7103266bf8 | Entries: 145 | ScreenName: ScreenPointing
+VTable: 7103267170 | Entries: 145 | ScreenName: ScreenPresetTextEntry
+VTable: 7103267778 | Entries: 145 | ScreenName: ScreenProposalShooter
+VTable: 7103267db8 | Entries: 145 | ScreenName: ScreenRelationDiagram
+VTable: 7103268330 | Entries: 145 | ScreenName: ScreenRelationGraphFocusSingle
+VTable: 7103268980 | Entries: 145 | ScreenName: ScreenRelationGraphMulti
+VTable: 7103269068 | Entries: 145 | ScreenName: ScreenRelationNameEdit
+VTable: 7103269860 | Entries: 145 | ScreenName: ScreenRelationshipsRanking
+VTable: 7103269f28 | Entries: 145 | ScreenName: ScreenResidentList
+VTable: 710326a558 | Entries: 145 | ScreenName: ScreenRocketSwitch
+VTable: 710326ab00 | Entries: 145 | ScreenName: ScreenRoomSelect
+VTable: 710326b088 | Entries: 146 | ScreenName: ScreenSceneFader
+VTable: 710326b6b8 | Entries: 145 | ScreenName: ScreenSettingDialog
+VTable: 710326bc98 | Entries: 145 | ScreenName: ScreenShopCartNum
+VTable: 710326c210 | Entries: 145 | ScreenName: ScreenShopConfirm
+VTable: 710326c7b0 | Entries: 145 | ScreenName: ScreenShopFade
+VTable: 710326cd60 | Entries: 147 | ScreenName: FOUND_NO_SCREEN_NAME
+VTable: 710326d2c0 | Entries: 200 | ScreenName: FOUND_NO_SCREEN_NAME
+VTable: 710326dc68 | Entries: 200 | ScreenName: FOUND_NO_SCREEN_NAME
+VTable: 710326e6e0 | Entries: 145 | ScreenName: ScreenStaffRoll
+VTable: 710326f468 | Entries: 145 | ScreenName: ScreenTalkChoice
+VTable: 710326f9b0 | Entries: 145 | ScreenName: ScreenTalkChoiceFocus
+VTable: 710326ffb0 | Entries: 145 | ScreenName: ScreenTalkGauge
+VTable: 7103270528 | Entries: 145 | ScreenName: ScreenTelopBottom
+VTable: 7103270af8 | Entries: 145 | ScreenName: ScreenTitle
+VTable: 71032711a0 | Entries: 145 | ScreenName: ScreenTravelCameraFrame
+VTable: 71032717e8 | Entries: 145 | ScreenName: ScreenTravelMiiSelect
+VTable: 7103271de8 | Entries: 145 | ScreenName: ScreenTravelPhotoResult
+VTable: 71032723b0 | Entries: 147 | ScreenName: ScreenTravelStart
+VTable: 71032729c8 | Entries: 145 | ScreenName: ScreenTutorialHighlight
+VTable: 7103272f88 | Entries: 145 | ScreenName: ScreenUgcTextList
+VTable: 7103273788 | Entries: 145 | ScreenName: ScreenWordEditTop
+VTable: 71032742c8 | Entries: 145 | ScreenName: Viewer
+VTable: 71032742c8 | Entries: 145 | ScreenName: MiniGame_Change

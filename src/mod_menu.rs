@@ -476,8 +476,8 @@ pub struct ModMenuVTable {
     pub app_button_off_start: extern "C" fn(), // ret
     pub app_button_off_end: extern "C" fn(),   // ret
 
-    pub app_button_down_start: extern "C" fn(), // ret
-    pub app_button_down_end: extern "C" fn(),   // ret
+    pub app_button_down_start: extern "C" fn(u64, u64), // ret
+    pub app_button_down_end: extern "C" fn(),           // ret
 
     pub app_button_cancel_start: extern "C" fn(), // ret
     pub app_button_cancel_end: extern "C" fn(),   // ret
@@ -679,7 +679,7 @@ pub unsafe fn initialize_vtable(text_base: u64) {
         app_button_off_start: stub,
         app_button_off_end: stub,
 
-        app_button_down_start: stub,
+        app_button_down_start: my_button_click_handler,
         app_button_down_end: stub,
 
         app_button_cancel_start: stub,
@@ -886,54 +886,58 @@ extern "C" fn mod_menu_app_close_end(this: u64) {
     }
 }
 
-extern "C" fn mod_menu_btn_0(this: u64, node: u64) {
-    println!("[ModMenu] Button 0 pressed, node={:#X}", node);
+extern "C" fn mod_menu_btn_0(this: u64, button_ptr: u64) {
+    println!("[ModMenu] Button 0 pressed, button_ptr={button_ptr:#X}");
 }
 
-extern "C" fn mod_menu_btn_1(this: u64, node: u64) {
-    println!("[ModMenu] Button 1 pressed, node={:#X}", node);
+extern "C" fn mod_menu_btn_1(this: u64, button_ptr: u64) {
+    println!("[ModMenu] Button 1 pressed, button_ptr={button_ptr:#X}");
 }
 
-extern "C" fn mod_menu_btn_2(this: u64, node: u64) {
-    println!("[ModMenu] Button 2 pressed, node={:#X}", node);
+extern "C" fn mod_menu_btn_2(this: u64, button_ptr: u64) {
+    println!("[ModMenu] Button 2 pressed, button_ptr={button_ptr:#X}");
 }
 
-extern "C" fn mod_menu_btn_3(this: u64, node: u64) {
-    println!("[ModMenu] Button 3 pressed, node={:#X}", node);
+extern "C" fn mod_menu_btn_3(this: u64, button_ptr: u64) {
+    println!("[ModMenu] Button 3 pressed, button_ptr={button_ptr:#X}");
 }
 
-extern "C" fn mod_menu_btn_4(this: u64, node: u64) {
-    println!("[ModMenu] Button 4 pressed, node={:#X}", node);
+extern "C" fn mod_menu_btn_4(this: u64, button_ptr: u64) {
+    println!("[ModMenu] Button 4 pressed, button_ptr={button_ptr:#X}");
 }
 
-extern "C" fn mod_menu_btn_5(this: u64, node: u64) {
-    println!("[ModMenu] Button 5 pressed, node={:#X}", node);
+extern "C" fn mod_menu_btn_5(this: u64, button_ptr: u64) {
+    println!("[ModMenu] Button 5 pressed, button_ptr={button_ptr:#X}");
 }
 
-extern "C" fn mod_menu_btn_6(this: u64, node: u64) {
-    println!("[ModMenu] Button 6 pressed, node={:#X}", node);
+extern "C" fn mod_menu_btn_6(this: u64, button_ptr: u64) {
+    println!("[ModMenu] Button 6 pressed, button_ptr={button_ptr:#X}");
 }
 
-extern "C" fn mod_menu_btn_7(this: u64, node: u64) {
-    println!("[ModMenu] Button 7 pressed, node={:#X}", node);
+extern "C" fn mod_menu_btn_7(this: u64, button_ptr: u64) {
+    println!("[ModMenu] Button 7 pressed, button_ptr={button_ptr:#X}");
 }
 
-extern "C" fn mod_menu_btn_8(this: u64, node: u64) {
-    println!("[ModMenu] Button 8 pressed, node={:#X}", node);
+extern "C" fn mod_menu_btn_8(this: u64, button_ptr: u64) {
+    println!("[ModMenu] Button 8 pressed, button_ptr={button_ptr:#X}");
 }
 
-type BtnFn = extern "C" fn(u64, u64);
-static BTN_HANDLERS: [BtnFn; 9] = [
-    mod_menu_btn_2,
-    mod_menu_btn_1,
-    mod_menu_btn_0,
-    mod_menu_btn_7,
-    mod_menu_btn_5,
-    mod_menu_btn_4,
-    mod_menu_btn_3,
-    mod_menu_btn_6,
-    mod_menu_btn_8,
-];
+extern "C" fn my_button_click_handler(this: u64, button_ptr: u64) {
+    let button_id = unsafe { *((button_ptr + 0x44) as *const i32) };
+
+    match button_id {
+        0 => mod_menu_btn_2(this, button_ptr),
+        1 => mod_menu_btn_1(this, button_ptr),
+        2 => mod_menu_btn_0(this, button_ptr),
+        3 => mod_menu_btn_7(this, button_ptr),
+        4 => mod_menu_btn_5(this, button_ptr),
+        5 => mod_menu_btn_4(this, button_ptr),
+        6 => mod_menu_btn_3(this, button_ptr),
+        7 => mod_menu_btn_6(this, button_ptr),
+        8 => mod_menu_btn_8(this, button_ptr),
+        _ => {}
+    }
+}
 
 extern "C" fn mod_menu_app_do_update(this: u64) {
     unsafe {
