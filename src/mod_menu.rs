@@ -1,4 +1,4 @@
-use std::ffi::c_char;
+use std::ffi::{c_char, c_void};
 use std::mem::MaybeUninit;
 use std::ops::Sub;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -1324,6 +1324,8 @@ static ENTRIES: [MenuButtonMap; 9] = [
 ];
 
 extern "C" fn mod_menu_unk_0x498(this: u64) {
+    // let this = unsafe { &mut *this };
+
     unsafe {
         let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
 
@@ -1393,3 +1395,143 @@ extern "C" fn mod_menu_unk_0x498(this: u64) {
         setup_hardware(this, 1, 2, 8, 0);
     }
 }
+
+#[repr(C)]
+pub struct Heap {
+    _data: [u8; 224],
+}
+
+#[repr(C)]
+pub struct ListNode {
+    pub prev: *mut ListNode, // 0x00
+    pub next: *mut ListNode, // 0x08
+}
+
+#[repr(C)]
+pub struct IDisposer {
+    pub vtable: *const c_void,
+    pub heap: *mut Heap,
+    pub list_node: ListNode,
+}
+
+#[repr(C)]
+pub struct InternalCriticalSectionStorage {
+    pub data: [u8; 4],
+}
+
+#[repr(C)]
+pub union MutexUnion {
+    pub mutex_image: [i32; 1],
+    pub mutex: std::mem::ManuallyDrop<InternalCriticalSectionStorage>,
+}
+
+#[repr(C, packed)]
+pub struct MutexType {
+    pub state: u8,
+    pub is_recursive: bool,
+    pub lock_level: i32,
+    pub nest_count: i32,
+    pub owner_thread: *const c_void,
+    pub mutex_union: MutexUnion,
+}
+
+#[repr(C)]
+pub struct CriticalSection {
+    pub disposer: IDisposer,
+    pub critical_section_inner: MutexType,
+}
+
+#[repr(C)]
+pub struct IDisposerEUI {
+    pub vtable: *const ModMenuVTable,
+    pub heap: *mut Heap,
+    pub list_node: ListNode,
+}
+
+#[repr(C)]
+pub struct OffsetList {
+    pub start_end: ListNode,
+    pub count: i32,
+    pub offset: i32,
+}
+
+#[repr(C)]
+pub struct SomeKindOfListMap {
+    pub count: i32,
+    pub capacity: i32,
+    pub data_buffer: *const c_void,
+    pub free_list_head: *const c_void,
+    pub free_list_tail: *const c_void,
+    pub nodes: [ListNode; 12],
+    pub objects: [*const c_void; 12],
+}
+
+#[repr(C)]
+pub struct ScreenModMenu {
+    pub base_idisposer: IDisposerEUI,
+    pub scene_manager: *const c_void,
+    pub layout_panes: *const c_void,
+    pub layout_manager: *const c_void,
+    pub render_node: ListNode,
+    pub update_node: ListNode,
+    pub pad_58: [u8; 24],
+    pub event_node: ListNode,
+    pub child_list_1: OffsetList,
+    pub node_4: ListNode,
+    pub unk_a8: u32,
+    pub screen_id: u32,
+    pub node_5: ListNode,
+    pub unk_c0: u64,
+    pub child_list_2: OffsetList,
+    pub parent_heap: *const c_void,
+    pub unk_e8: i32,
+    pub pad_ec: u32,
+    pub ui_allocator: *const c_void,
+    pub currently_focuesd_node: *const c_void,
+    pub pad_100: [u8; 24],
+    pub camera_fov: f32,
+    pub input_mode: u8,
+    pub pad_11e: [u8; 3],
+    pub unk_state_2: u16,
+    pub is_visible: bool,
+    pub input_flags: u32,
+    pub secondary_vtable: *const c_void,
+    pub delegate_1: [u8; 32],
+    pub unk_150: u64,
+
+    pub fixed_pool_1: [u8; 96],
+    pub pool_buffer_1: *const c_void,
+    pub unk_1c0: [u8; 56],
+
+    pub fixed_pool_2: [u8; 96],
+    pub pool_buffer_2: *const c_void,
+    pub unk_260: [u8; 56],
+    pub scale_enabled: bool,
+    pub pad_299: [u8; 3],
+    pub base_scale: f32,
+    pub screen_lock: CriticalSection,
+    pub tertiary_vtable: *const c_void,
+
+    pub pad_2de: [u8; 104],
+    pub navigation_map: SomeKindOfListMap,
+    pub is_input_enabled: bool,
+    pub transition_state: u8,
+    pub is_unlocked: [bool; 8],
+    pub is_initialized: bool,
+
+    pub pad_494: u8,
+
+    pub pending_action_id: i32,
+    pub action_timer: i32,
+
+    pub pad_49c: [u8; 20],
+
+    pub anim_in_from_bg: *const c_void,
+    pub anim_out_to_bg: *const c_void,
+
+    pub pad_4c0: [u8; 12],
+
+    pub anim_frame_counter: i32,
+}
+
+const _: () = assert!(core::mem::size_of::<ScreenModMenu>() == 0x4D0);

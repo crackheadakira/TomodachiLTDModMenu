@@ -1,9 +1,13 @@
 mod eui;
 mod fsm_ext;
 mod mod_menu;
+mod patcher;
 mod ui_framework;
 
-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::{
+    ffi::c_char,
+    sync::atomic::{AtomicBool, AtomicU64, Ordering},
+};
 
 use crate::{
     eui::EuiController,
@@ -188,11 +192,104 @@ fn build_scene_controller(manager: u64, heap: u64, screen_id: u32, unknown: u64)
     call_original!(manager, heap, screen_id, unknown)
 }
 
+#[skyline::hook(offset = 0x20dec8)]
+fn sead_resource_mgr_load_hook(
+    manager: *mut u8,
+    path_ptr: *const *const u8,
+    load_arg: *const u8,
+    out_id: *mut u32,
+) -> u64 {
+    /*if !path_ptr.is_null() {
+        let path = unsafe { *path_ptr };
+        if !path.is_null() {
+            let path_str = unsafe { std::ffi::CStr::from_ptr(path as *const c_char) };
+
+            unsafe {
+                let mut fp: u64;
+                std::arch::asm!("mov {}, x29", out(reg) fp);
+
+                let text_base =
+                    skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
+
+                let rstb_size = unsafe { *(load_arg.add(0x18) as *const u32) };
+                println!("[ResourceLoader] Trace for: {path_str:?}, RSTB: {rstb_size:#X}");
+
+                // Walk up 4 stack frames
+                for i in 0..4 {
+                    if fp == 0 {
+                        break;
+                    }
+
+                    // In AArch64, [fp + 8] is the Link Register (return address)
+                    let lr = *((fp + 8) as *const u64);
+
+                    // Check if this address belongs to the main game executable
+                    // (Assuming the game's text section is smaller than 0x4000000 bytes / 64MB)
+                    if lr >= text_base && lr < text_base + 0x4000000 {
+                        let lr_offset = lr - text_base;
+                        println!("  -> Frame {}: Game Offset: {:#X}", i, lr_offset);
+                    } else {
+                        // This will catch the 0x6E... plugin addresses
+                        println!("  -> Frame {}: Plugin/Trampoline Addr: {:#X}", i, lr);
+                    }
+
+                    // Move to the previous frame pointer
+                    fp = *(fp as *const u64);
+                }
+            }
+        }
+    }
+
+    call_original!(manager, path_ptr, load_arg, out_id)*/
+
+    if !path_ptr.is_null() {
+        let path = unsafe { *path_ptr };
+        if !path.is_null() {
+            let path_str =
+                unsafe { std::ffi::CStr::from_ptr(path as *const c_char) }.to_string_lossy();
+
+            if path_str.contains("USen.Product.100.sarc") {
+                unsafe {
+                    for i in 0..16 {
+                        let offset = i * 4;
+                        let val = *(load_arg.add(offset) as *const u32);
+                        println!("[USen] Offset +0x{:02X}: 0x{:08X} ({})", offset, val, val);
+                    }
+                }
+            } else if path_str.contains("EUen.Product.100.sarc") {
+                unsafe {
+                    for i in 0..16 {
+                        let offset = i * 4;
+                        let val = *(load_arg.add(offset) as *const u32);
+                        println!("[EUen] Offset +0x{:02X}: 0x{:08X} ({})", offset, val, val);
+                    }
+                }
+            }
+        }
+    }
+
+    call_original!(manager, path_ptr, load_arg, out_id)
+}
+
+#[skyline::hook(offset = 0x6084b0)]
+fn validate_rstb_insert_hook(tree_ptr: *mut u8, hash_and_size: u64) {
+    let hash = (hash_and_size & 0xFFFFFFFF) as u32;
+    let size = (hash_and_size >> 32) as u32;
+
+    println!("[RSTB BUILDER] Insert -> Hash: {hash:08X} | Size: {size} ({size:0X}) (raw: {hash_and_size:0X})");
+
+    call_original!(tree_ptr, hash_and_size);
+}
+
 #[skyline::main(name = "tomodachi-mod-menu")]
 pub fn main() {
     fsm_ext::init();
 
-    skyline::install_hooks!(build_scene_controller, crate::mod_menu::capture_screen_heap);
+    skyline::install_hooks!(
+        build_scene_controller,
+        crate::mod_menu::capture_screen_heap,
+        crate::patcher::rstb_parse_hook,
+    );
     fsm_ext::register_menu(0x88, Some(state_88_enter), Some(state_88_execute), None);
 
     install_buttons! {

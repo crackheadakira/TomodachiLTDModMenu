@@ -89,11 +89,6 @@ macro_rules! install_buttons {
                     if let Some((bflyt, pane, controller)) = $crate::ui_framework::get_button_identity(btn, context_ptr) {
                         println!("[Scanner] ctrl: {controller:#2X}, \"{bflyt}\", \"{pane}\"");
 
-                        let vtable_index = ctx.registers[8].x();
-                        let vtable = *(btn_ptr as *const u64);
-                        let target_func = *((vtable + (vtable_index * 8)) as *const u64);
-                        println!("[Scanner] About to call Native Function at: {target_func:#X}");
-
                         $(
                             if bflyt == $bflyt && pane == $pane {
                                 btn.click_state = 0;
@@ -144,10 +139,10 @@ fn __bflyt_register_controller_hook(
         if !name_ptr.is_null() {
             let name = CStr::from_ptr(name_ptr).to_string_lossy().to_string();
 
-            let lr: u64;
+            /*let lr: u64;
             std::arch::asm!("mov {}, x30", out(reg) lr);
 
-            println!("[Framework] {name} loaded! LR: {lr:#X}",);
+            println!("[Framework] {name} loaded! LR: {lr:#X}",);*/
 
             println!("[Framework] Registered {controller:#X} as {name}, p2: {loader_buffer:#X}, p3: {screen:#X}, p4: {manager:#X}, p5: {param_5:#X}, param_6: {param_6:#X}, param_7: {param_7:#X}, param_8: {param_8}, param_9: {param_9:#X}, {param_10:#X}");
         }
