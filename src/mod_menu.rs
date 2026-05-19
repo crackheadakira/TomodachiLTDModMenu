@@ -1408,9 +1408,9 @@ pub struct ListNode {
 }
 
 #[repr(C)]
-pub struct IDisposer {
-    pub vtable: *const c_void,
-    pub heap: *mut Heap,
+pub struct IDisposer<V> {
+    pub vtable: *const V,
+    pub disposer_heap: *mut Heap,
     pub list_node: ListNode,
 }
 
@@ -1437,15 +1437,8 @@ pub struct MutexType {
 
 #[repr(C)]
 pub struct CriticalSection {
-    pub disposer: IDisposer,
+    pub disposer: IDisposer<c_void>,
     pub critical_section_inner: MutexType,
-}
-
-#[repr(C)]
-pub struct IDisposerEUI {
-    pub vtable: *const ModMenuVTable,
-    pub heap: *mut Heap,
-    pub list_node: ListNode,
 }
 
 #[repr(C)]
@@ -1456,22 +1449,30 @@ pub struct OffsetList {
 }
 
 #[repr(C)]
+pub struct LayoutManager {
+    pub vtable: *const c_void,
+    pub start_end: ListNode,
+    pub count: i32,
+    pub offset: i32,
+}
+
+#[repr(C)]
 pub struct SomeKindOfListMap {
     pub count: i32,
     pub capacity: i32,
     pub data_buffer: *const c_void,
-    pub free_list_head: *const c_void,
+    pub free_list_head: *mut u64,
     pub free_list_tail: *const c_void,
     pub nodes: [ListNode; 12],
     pub objects: [*const c_void; 12],
 }
 
 #[repr(C)]
-pub struct ScreenModMenu {
-    pub base_idisposer: IDisposerEUI,
+pub struct BaseScreen<V> {
+    pub base_idisposer: IDisposer<V>,
     pub scene_manager: *const c_void,
     pub layout_panes: *const c_void,
-    pub layout_manager: *const c_void,
+    pub layout_manager: *const LayoutManager,
     pub render_node: ListNode,
     pub update_node: ListNode,
     pub pad_58: [u8; 24],
@@ -1513,6 +1514,11 @@ pub struct ScreenModMenu {
     pub tertiary_vtable: *const c_void,
 
     pub pad_2de: [u8; 104],
+}
+
+#[repr(C)]
+pub struct ScreenModMenu {
+    pub base: BaseScreen<ModMenuVTable>,
     pub navigation_map: SomeKindOfListMap,
     pub is_input_enabled: bool,
     pub transition_state: u8,

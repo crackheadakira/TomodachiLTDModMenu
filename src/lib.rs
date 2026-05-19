@@ -288,7 +288,7 @@ pub fn main() {
     skyline::install_hooks!(
         build_scene_controller,
         crate::mod_menu::capture_screen_heap,
-        crate::patcher::rstb_parse_hook,
+        // crate::patcher::rstb_parse_hook,
     );
     fsm_ext::register_menu(0x88, Some(state_88_enter), Some(state_88_execute), None);
 
