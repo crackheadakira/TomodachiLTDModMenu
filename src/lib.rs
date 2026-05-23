@@ -2,6 +2,7 @@ mod eui;
 mod fsm_ext;
 mod mod_menu;
 mod patcher;
+mod sead;
 mod ui_framework;
 
 use std::{

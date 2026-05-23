@@ -3,6 +3,11 @@ use std::mem::MaybeUninit;
 use std::ops::Sub;
 use std::sync::atomic::{AtomicU64, Ordering};
 
+use crate::sead::{
+    container::{ListNode, OffsetList},
+    heap::{Heap, IDisposer},
+    thread::CriticalSection,
+};
 use crate::{eui::EuiController, ui_framework::ButtonState};
 
 pub const fn murmurhash3(data: &[u8]) -> u32 {
@@ -282,9 +287,7 @@ extern "C" fn mod_menu_ctor(obj: u64) {
         *((obj + 0x490) as *mut u8) = 0;
         *((obj + 0x494) as *mut i32) = -1;
 
-        let vtable_base = MOD_MENU_VTABLE.as_ptr() as u64;
-        let vtable_ptr = vtable_base + 0x10;
-        *(obj as *mut u64) = vtable_ptr;
+        *(obj as *mut u64) = MOD_MENU_VTABLE.as_ptr() as u64;
 
         *((obj + 0x498) as *mut u64) = 0;
         *((obj + 0x128) as *mut u64) = MOD_MENU_SECONDARY_VTABLE.as_ptr() as u64 + 0x10;
@@ -303,9 +306,6 @@ extern "C" fn mod_menu_ctor(obj: u64) {
 
 #[repr(C)]
 pub struct ModMenuVTable {
-    pub offset_to_top: u64,
-    pub rtti: u64,
-
     pub destructor1: extern "C" fn(u64),
     pub destructor2: extern "C" fn(u64),
 
@@ -456,13 +456,13 @@ pub struct ModMenuVTable {
     pub unk_0x388: extern "C" fn(u64) -> f32, // ldr s0, [x0, 0x324] -> fmov s1, 0x3f000000 -> fmul s0, s0, s1 -> ret
     pub unk_0x390: extern "C" fn(u64) -> u32, // ldr s0, [x0, 0x324] -> ret
 
-    pub app_do_initialize: extern "C" fn(u64),
-    pub app_open_start: extern "C" fn(u64),
+    pub app_do_initialize: extern "C" fn(*mut ScreenModMenu),
+    pub app_open_start: extern "C" fn(*mut ScreenModMenu),
     pub app_open_end: extern "C" fn(), // ret
 
-    pub app_close_start: extern "C" fn(u64),
+    pub app_close_start: extern "C" fn(*mut ScreenModMenu),
     pub app_close_end: extern "C" fn(u64),
-    pub app_do_update: extern "C" fn(u64), // TODO: double-check
+    pub app_do_update: extern "C" fn(*mut ScreenModMenu), // TODO: double-check
 
     pub is_deselect_box_cursor_on_close: extern "C" fn() -> bool, // mov w0, wzr -> ret
     pub unk_0x3d0: extern "C" fn(),                               // ret
@@ -497,8 +497,8 @@ pub struct ModMenuVTable {
     pub app_open_start_2: extern "C" fn(u64), // eui::screen
     pub set_component_closed_state: extern "C" fn(u64, i32, u32),
 
-    pub unk_0x490: extern "C" fn(u64, u32),
-    pub unk_0x498: extern "C" fn(u64),
+    pub unk_0x490: extern "C" fn(*mut ScreenModMenu, u32),
+    pub unk_0x498: extern "C" fn(*mut ScreenModMenu),
 }
 
 extern "C" fn stub_max() -> u64 {
@@ -527,8 +527,6 @@ pub static mut MOD_MENU_VTABLE: MaybeUninit<ModMenuVTable> = MaybeUninit::uninit
 
 pub unsafe fn initialize_vtable(text_base: u64) {
     MOD_MENU_VTABLE.write(ModMenuVTable {
-        offset_to_top: 0,
-        rtti: 0,
         destructor1: mod_menu_destructor1,
         destructor2: mod_menu_destructor2,
         check_derived_runtime_type_info: mod_menu_check_rtti,
@@ -706,26 +704,29 @@ pub unsafe fn initialize_vtable(text_base: u64) {
     });
 }
 
-extern "C" fn mod_menu_app_do_initialize(this: u64) {
+extern "C" fn mod_menu_app_do_initialize(this: *mut ScreenModMenu) {
+    let this_ptr = this;
+    let this = unsafe { &mut *this };
+
     unsafe {
         let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
-        let layout = *((this + 0x28) as *const u64);
+        let layout = this.base.layout_panes as u64;
 
-        *((this + 0x492) as *mut u8) = 1;
-        let mask_ptr = (this + 0x48a) as *mut u64;
-        std::ptr::write_unaligned(mask_ptr, 0x0101010101010101);
+        this.is_initialized = true;
+
+        this.unk_48a = [true; 8];
 
         let find_anim: extern "C" fn(u64, *const u8, i32) -> u64 =
             std::mem::transmute(text_base + 0x48a84);
 
         let in_bg = find_anim(layout, b"InFromBG\0".as_ptr(), 0);
-        *((this + 0x4b0) as *mut u64) = in_bg;
+        this.anim_in_from_bg = in_bg as *const c_void;
 
         let out_bg = find_anim(layout, b"OutToBG\0".as_ptr(), 0);
-        *((this + 0x4b8) as *mut u64) = out_bg;
+        this.anim_out_to_bg = out_bg as *const c_void;
 
         let short_in = find_anim(layout, b"ShortIn\0".as_ptr(), 0);
-        *((this + 0x4c0) as *mut u64) = short_in;
+        this.anim_short_in = short_in as *const c_void;
 
         let in_after = find_anim(layout, b"InAfter\0".as_ptr(), 0);
 
@@ -736,14 +737,17 @@ extern "C" fn mod_menu_app_do_initialize(this: u64) {
     }
 }
 
-extern "C" fn mod_menu_app_open_start(this: u64) {
-    println!("[Mod] AppOpenStart entered! param_1 = {this:#X}");
+extern "C" fn mod_menu_app_open_start(this: *mut ScreenModMenu) {
+    let this_ptr = this;
+    let this = unsafe { &mut *this };
+
+    println!("[Mod] AppOpenStart entered!");
     unsafe {
         let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
 
         let mut layout_msg_buf = [0u64; 2];
-        let layout_ptr = *((this + 0x20) as *const u64);
-        let list_manager = *((this + 0x30) as *const u64);
+        let scene_manager = (this.base.scene_manager) as *mut u64 as u64;
+        let layout_manager = this.base.layout_manager as *mut u64 as u64;
 
         let load_text_from_mal: extern "C" fn(
             u64,
@@ -757,11 +761,11 @@ extern "C" fn mod_menu_app_open_start(this: u64) {
         let text_pane = b"T_Text_00\0".as_ptr();
         let text_id = b"L_ModBtn_03\0".as_ptr();
 
-        let component_6 = get_layout_node(list_manager, 6);
+        let component_6 = get_layout_node(layout_manager, 6);
 
         if component_6 != 0 {
             load_text_from_mal(
-                this,
+                this_ptr as u64,
                 0.0,
                 *((component_6 + 0x20) as *const u64),
                 &text_pane,
@@ -770,17 +774,17 @@ extern "C" fn mod_menu_app_open_start(this: u64) {
             );
         }
 
-        *((this + 0x4cc) as *mut u32) = 0;
+        this.anim_frame_counter = 0;
 
         let get_anim_length: extern "C" fn(u64) -> u16 = std::mem::transmute(text_base + 0x243a60);
 
         // inlined FUN_71020a604c
         for i in 0..9i32 {
-            let comp = get_layout_node(list_manager, i);
+            let comp = get_layout_node(layout_manager, i);
             if comp != 0 {
-                let layout_ptr = *((comp + 0x20) as *const u64);
-                if layout_ptr != 0 {
-                    let anim_ctrl = *((layout_ptr + 0x70) as *const u64);
+                let scene_manager = *((comp + 0x20) as *const u64);
+                if scene_manager != 0 {
+                    let anim_ctrl = *((scene_manager + 0x70) as *const u64);
                     if anim_ctrl != 0 {
                         let length = get_anim_length(anim_ctrl);
                         *((anim_ctrl + 0x20) as *mut f32) = (length as f32) * 0.5;
@@ -789,31 +793,32 @@ extern "C" fn mod_menu_app_open_start(this: u64) {
             }
         }
 
-        let vtable = *(this as *const *const u64);
-        let set_comp_state: extern "C" fn(u64, i32, u32) =
-            std::mem::transmute(*vtable.add(0x488 / 8));
+        ((*this.base.base_idisposer.vtable).set_component_closed_state)(this_ptr as u64, 7, 0);
 
-        set_comp_state(this, 7, 0);
-
-        let flag_4c8 = *((this + 0x4c8) as *const u8);
-        if flag_4c8 == 0 {
-            let val_494 = *((this + 0x494) as *const i32);
-            if val_494 == -1 {
+        if this.unk_4c8 == 0 {
+            if this.pending_action_id == -1 {
                 let fun_5e44: extern "C" fn(u64) = std::mem::transmute(text_base + 0x20a5e44);
-                fun_5e44(this);
+                fun_5e44(this_ptr as u64);
 
-                let state_48a = std::ptr::read_unaligned((this + 0x48a) as *const u32);
-                let state_490 = *((this + 0x490) as *const u32);
-
-                set_comp_state(this, 0, state_48a);
-                set_comp_state(this, 6, state_490);
+                ((*this.base.base_idisposer.vtable).set_component_closed_state)(
+                    this_ptr as u64,
+                    0,
+                    this.unk_48a[0] as u32,
+                );
+                ((*this.base.base_idisposer.vtable).set_component_closed_state)(
+                    this_ptr as u64,
+                    6,
+                    this.unk_48a[6] as u32,
+                );
             }
+
+            this.unk_4c8 = 0;
         }
 
         let priorities = [2, 1, 0, 6, 5, 4, 7, 3, 8];
         let mut final_id = -1i32;
         for &id in &priorities {
-            let comp = get_layout_node(list_manager, id);
+            let comp = get_layout_node(layout_manager, id);
             if comp != 0 {
                 let flags = *((comp + 0x40) as *const u8);
                 if (flags >> 2 & 1) != 0 {
@@ -826,10 +831,8 @@ extern "C" fn mod_menu_app_open_start(this: u64) {
         if final_id != -1 {
             let set_initial_focus: extern "C" fn(u64, i32) =
                 std::mem::transmute(text_base + 0x8a8cf8);
-            set_initial_focus(this, final_id);
+            set_initial_focus(this_ptr as u64, final_id);
         }
-
-        println!("[Mod] AppOpenStart Logic Completed Safely");
     }
 }
 
@@ -855,18 +858,27 @@ unsafe fn get_layout_node(list_manager: u64, target_id: i32) -> u64 {
     0
 }
 
-extern "C" fn mod_menu_app_close_start(this: u64) {
+extern "C" fn mod_menu_app_close_start(this: *mut ScreenModMenu) {
     println!("[Mod] appCloseStart");
+    let this_ptr = this;
+    let this = unsafe { &mut *this };
+
     unsafe {
         let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
 
-        let out_anim = *((this + 0x4b8) as *const u64);
-        if out_anim != 0 {
-            let vtable = *(out_anim as *const *const u64);
-            let play: extern "C" fn(u64) = std::mem::transmute(*vtable.add(0xd8 / 8));
-            let speed = *((out_anim + 0x50) as *const f32);
+        let find_anim: extern "C" fn(u64, *const u8) -> u64 =
+            std::mem::transmute(text_base + 0x8b18a4);
+
+        let layout_panes = this.base.layout_panes as u64;
+        let anim = find_anim(layout_panes, b"InAfter\0".as_ptr());
+
+        if anim != 0 {
+            let speed = *((anim + 0x50) as *const f32);
+
             if speed != 0.0 {
-                play(out_anim);
+                let vtable = *(anim as *const *const u64);
+                let play: extern "C" fn(u64) = std::mem::transmute(*vtable.add(0xd8 / 8));
+                play(anim);
             }
         }
     }
@@ -939,6 +951,264 @@ extern "C" fn my_button_click_handler(this: u64, button_ptr: u64) {
     }
 }
 
+extern "C" fn mod_menu_app_do_update(this: *mut ScreenModMenu) {
+    let this_ptr = this;
+    let this = unsafe { &mut *this };
+
+    unsafe {
+        let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
+
+        let get_layout_node_with_ptr: extern "C" fn(*mut LayoutManager, i32) -> *const u8 =
+            std::mem::transmute(text_base + 0x8040b0);
+        let fun_7100243a60: extern "C" fn(*const u8) -> i32 =
+            std::mem::transmute(text_base + 0x243a60);
+        let fun_710215b208: extern "C" fn(*mut ScreenModMenu, i32) -> f32 =
+            std::mem::transmute(text_base + 0x215b208);
+        let is_node_clicked: extern "C" fn(*const u8) -> bool =
+            std::mem::transmute(text_base + 0x230a754);
+        let fun_710090d3c0: extern "C" fn(u32, *mut BaseScreen<ModMenuVTable>, i32) =
+            std::mem::transmute(text_base + 0x90d3c0);
+        let fun_71008cb6bc: extern "C" fn(u64, i32) -> u32 =
+            std::mem::transmute(text_base + 0x8cb6bc);
+        let fun_7102309cfc: extern "C" fn(u64) -> bool = std::mem::transmute(text_base + 0x2309cfc);
+        let fun_710215b490: extern "C" fn(u64, i32) -> u32 =
+            std::mem::transmute(text_base + 0x215b490);
+
+        let fun_710231d85c: extern "C" fn(*mut ScreenModMenu) -> bool =
+            std::mem::transmute(text_base + 0x231d85c);
+        let fun_710230b308: extern "C" fn(u64) -> u32 = std::mem::transmute(text_base + 0x230b308);
+        let get_ui_controller: extern "C" fn() -> *const u8 =
+            std::mem::transmute(text_base + 0x6911c0);
+        let fun_710215ad58: extern "C" fn(*mut ScreenModMenu) =
+            std::mem::transmute(text_base + 0x215ad58);
+
+        let g_system_ptr = *((text_base + 0x396d1c0) as *const *mut u64);
+
+        let i_var_8 = if g_system_ptr.is_null() {
+            2
+        } else {
+            let fun_7100264fa0: extern "C" fn(*mut u64) -> i32 =
+                std::mem::transmute(text_base + 0x264fa0);
+
+            fun_7100264fa0(g_system_ptr)
+        };
+
+        this.anim_frame_counter += i_var_8;
+
+        for i in 0..9usize {
+            unsafe {
+                let node = get_layout_node_with_ptr(this.base.layout_manager, i as i32);
+
+                if !node.is_null() {
+                    let ptr1 = *((node as *const u8).add(0x20) as *const *const u8);
+
+                    if !ptr1.is_null() {
+                        let l_var_17 = *(ptr1.add(0x70) as *const *const u8);
+
+                        if !l_var_17.is_null() {
+                            let u_var_7 = fun_7100243a60(l_var_17);
+
+                            let bit_check = (0x6f >> (i & 0x3f)) & 1;
+
+                            if bit_check != 0 && u_var_7 != 0 {
+                                let button_id = ENTRIES[i].id;
+
+                                let f_var_18 = fun_710215b208(this_ptr, button_id);
+
+                                let should_process = if i == 2 {
+                                    f_var_18 == 3.0
+                                } else {
+                                    f_var_18 == 1.0
+                                };
+
+                                if should_process {
+                                    let float_val = *(l_var_17.add(0x20) as *const f32);
+
+                                    if (u_var_7 as f32) <= float_val + (i_var_8 as f32) {
+                                        let pad_40_byte = *(node as *const u8).add(0x40);
+                                        if (pad_40_byte >> 4) & 1 != 0 {
+                                            is_node_clicked(node);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if this.pending_action_id >= 0 && (this.base.unk_11e == 2 && this.base.close_intent > -1) {
+            let timer = this.action_timer;
+
+            let dt_val = *((g_system_ptr as *const u8).add(0x10) as *const i32);
+
+            let mut should_fire = false;
+
+            if timer < 0 {
+                let next_timer = timer + dt_val;
+                if next_timer >= 0 {
+                    this.action_timer = 0;
+                    should_fire = true;
+                } else {
+                    this.action_timer = next_timer;
+                }
+            } else if timer == 0 {
+                should_fire = true;
+            } else {
+                let next_timer = timer - dt_val;
+                if next_timer <= 0 {
+                    this.action_timer = 0;
+                    should_fire = true;
+                } else {
+                    this.action_timer = next_timer;
+                }
+            }
+
+            if should_fire {
+                let fun_71020a5c90: extern "C" fn(*mut u64, u64) =
+                    std::mem::transmute(text_base + 0x20a5c90);
+                fun_71020a5c90(this_ptr as *mut u64, this.pending_action_id as u64);
+                this.pending_action_id = -1;
+            }
+        }
+
+        let mut input_free = true;
+        for i in 0..9 {
+            let chunk = *this.navigation_map.data_buffer.add(i);
+            let i_var_8 = *((chunk as *const u8).add(0xc) as *const i32);
+
+            if i_var_8 >= 0 {
+                let node = get_layout_node_with_ptr(this.base.layout_manager, i as i32);
+
+                if !node.is_null() {
+                    let u_var_9 = fun_71008cb6bc(this_ptr as u64, i_var_8);
+
+                    if (u_var_9 & 1) != 0 {
+                        let f_var_18 = fun_710215b208(this_ptr, i_var_8);
+                        let b_var_6 = fun_7102309cfc(node as u64);
+
+                        if f_var_18 >= 2.0 && b_var_6 {
+                            let vtable = *(node as *const *const u64);
+                            let vfunc_0x128: extern "C" fn(*const u8, i32) =
+                                std::mem::transmute(*vtable.add(0x128 / 8));
+
+                            vfunc_0x128(node, 0);
+                        }
+
+                        input_free = false;
+                        break;
+                    } else {
+                        let u_var_9_alt = fun_710215b490(this_ptr as u64, i_var_8);
+
+                        if (u_var_9_alt & 1) != 0 {
+                            for j in 0..=8 {
+                                let sub_node =
+                                    get_layout_node_with_ptr(this.base.layout_manager, j);
+                                if !sub_node.is_null() {
+                                    let sub_vtable = *(sub_node as *const *const u64);
+                                    let vfunc_0x60: extern "C" fn(*const u8, i32) =
+                                        std::mem::transmute(*sub_vtable.add(0x60 / 8));
+
+                                    vfunc_0x60(sub_node, 1);
+                                }
+                            }
+
+                            ((*this.base.base_idisposer.vtable).set_component_closed_state)(
+                                this_ptr as u64,
+                                i as i32,
+                                1,
+                            );
+                        }
+                    }
+                }
+            }
+        }
+
+        let mut b_var_5 = false;
+        if this.pending_action_id == -1 {
+            b_var_5 = input_free;
+        }
+
+        this.is_input_enabled = b_var_5;
+        input_free = this.base.unk_11e == 2 && this.base.close_intent > -1;
+
+        // closes when X is clicked, as that is the button that it was spawned with
+        if input_free
+            && fun_710231d85c(this_ptr)
+            && (fun_710230b308(this.base.layout_manager as u64) & 1) == 0
+            && this.is_input_enabled
+            && this.transition_state == 0
+        {
+            let ui_controller = get_ui_controller();
+
+            if !ui_controller.is_null() {
+                let btn_state = *(ui_controller.add(8) as *const u8);
+
+                if (btn_state >> 3) & 1 != 0 {
+                    fun_710215ad58(this_ptr);
+                    ((*this.base.base_idisposer.vtable).close)(this_ptr as u64, -1);
+                }
+            }
+        }
+
+        let g_clock_manager_ptr = *((text_base + 0x32cbdc0) as *const *const u8);
+        let clock_manager = g_clock_manager_ptr;
+
+        if !clock_manager.is_null() {
+            let minute = *(clock_manager.add(0x144) as *const u32);
+            let hour = *(clock_manager.add(0x140) as *const u32);
+            let day = *(clock_manager.add(0x138) as *const u32);
+
+            let current_minutes = minute + (hour * 60);
+
+            let needs_update = this.unk_4a8 == 0
+                || this.unk_4a4 != current_minutes
+                || this.unk_4a0 == 0
+                || this.unk_49c != day;
+
+            if needs_update {
+                let ptr_dat = text_base + 0x32cb2e8;
+                let pu_var_13 = **(ptr_dat as *const *mut *mut u32);
+
+                if !pu_var_13.is_null() {
+                    let u_var_1 = *pu_var_13.add(3);
+                    let mut u_var_9 = *pu_var_13 ^ (*pu_var_13 << 11);
+
+                    *pu_var_13 = *pu_var_13.add(1);
+                    *pu_var_13.add(1) = *pu_var_13.add(2);
+
+                    u_var_9 = (u_var_9 >> 8) ^ (u_var_1 >> 19) ^ u_var_9 ^ u_var_1;
+                    *pu_var_13.add(2) = u_var_1;
+                    *pu_var_13.add(3) = u_var_9;
+                }
+
+                if this.unk_4a8 == 0 {
+                    this.unk_4a8 = 1;
+                }
+                this.unk_4a4 = current_minutes;
+
+                if this.unk_4a0 == 0 {
+                    this.unk_4a0 = 1;
+                }
+                this.unk_49c = day;
+            }
+        }
+
+        let is_ready = this.base.unk_11e == 2 && this.base.close_intent > -1;
+
+        if is_ready && !fun_710231d85c(this_ptr) {
+            if this.unk_48a[5] {
+                let f_var_17 = fun_710215b208(this_ptr, 4);
+                if f_var_17 > 0.0 {
+                    fun_710090d3c0(0, core::ptr::addr_of_mut!(this.base), 4);
+                }
+            }
+        }
+    }
+}
+
+/*
 extern "C" fn mod_menu_app_do_update(this: u64) {
     unsafe {
         let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
@@ -1159,6 +1429,7 @@ extern "C" fn mod_menu_app_do_update(this: u64) {
         }
     }
 }
+ */
 
 extern "C" fn mod_menu_destructor1(this: u64) {
     println!("[Mod] Destructor1");
@@ -1247,20 +1518,22 @@ extern "C" fn mod_menu_unk_0x3e8(this: u64) {
     }
 }
 
-extern "C" fn mod_menu_unk_0x490(this: u64, param_2: u32) {
+extern "C" fn mod_menu_unk_0x490(this: *mut ScreenModMenu, focus_flags: u32) {
     println!("[Mod] unk_0x490");
+    let this_ptr = this;
+    let this = unsafe { &mut *this };
+
     unsafe {
-        let count = *((this + 0x348) as *const i32);
-        if count <= 0 {
-            return;
-        }
+        if 0 < this.navigation_map.count {
+            let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
 
-        let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
-        let set_component_state: extern "C" fn(u64, i32, u8) =
-            std::mem::transmute(text_base + 0x215bcec);
-
-        for i in 0..count {
-            set_component_state(this, i, (param_2 & 1) as u8);
+            for i in 0..this.navigation_map.count {
+                ((*this.base.base_idisposer.vtable).set_component_closed_state)(
+                    this_ptr as u64,
+                    i,
+                    (focus_flags & 1),
+                );
+            }
         }
     }
 }
@@ -1323,8 +1596,101 @@ static ENTRIES: [MenuButtonMap; 9] = [
     },
 ];
 
-extern "C" fn mod_menu_unk_0x498(this: u64) {
-    // let this = unsafe { &mut *this };
+extern "C" fn mod_menu_unk_0x498(this: *mut ScreenModMenu) {
+    let this_ptr = this;
+    let this = unsafe { &mut *this };
+
+    unsafe {
+        let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
+
+        for i in 0..9 {
+            if this.navigation_map.count < this.navigation_map.capacity {
+                let chunk = this.navigation_map.free_list_head;
+
+                if !chunk.is_null() {
+                    this.navigation_map.free_list_head = (*chunk) as *mut u64;
+                }
+
+                *chunk = ENTRIES[i].name as u64;
+                let packed_ids = (ENTRIES[i].id as u64) | ((ENTRIES[i].neighbor as u64) << 32);
+                *(chunk.add(1)) = packed_ids;
+
+                if this.navigation_map.count < this.navigation_map.capacity {
+                    unsafe {
+                        let idx = this.navigation_map.count as usize;
+
+                        *this.navigation_map.data_buffer.add(idx) = chunk as u64;
+                    }
+                    this.navigation_map.count += 1;
+                }
+            }
+
+            let layout_manager = unsafe { &mut *this.base.layout_manager };
+            let layout_manager = unsafe { &mut *this.base.layout_manager };
+
+            let sentinel_ptr = core::ptr::addr_of!(layout_manager.start_end) as *mut ListNode;
+            let mut current_ptr = layout_manager.start_end.next;
+
+            if current_ptr != sentinel_ptr && !current_ptr.is_null() {
+                'search: loop {
+                    unsafe {
+                        let raw_node = current_ptr as *mut u8;
+
+                        let pane_name_ptr = *(raw_node.add(0x10) as *const *const u8);
+
+                        if !pane_name_ptr.is_null() {
+                            let mut char_idx = 0;
+                            loop {
+                                let expected_char = *ENTRIES[i].name.add(char_idx);
+                                let actual_char = *pane_name_ptr.add(char_idx);
+
+                                if expected_char != actual_char {
+                                    break;
+                                }
+
+                                if char_idx > 0x3e || expected_char == b'\0' {
+                                    let out_idx_addr = raw_node.add(0x3c) as *mut i32;
+                                    *out_idx_addr = i as i32;
+                                    break 'search;
+                                }
+                                char_idx += 1;
+                            }
+                        }
+
+                        current_ptr = (*current_ptr).next;
+                    }
+
+                    if current_ptr == sentinel_ptr {
+                        break;
+                    }
+                }
+            }
+        }
+
+        let link_hardware: extern "C" fn(u64, u32, i32, i32) =
+            std::mem::transmute(text_base + 0x84682c);
+        let setup_hardware: extern "C" fn(u64, u32, i32, i32, u8) =
+            std::mem::transmute(text_base + 0x8b847c);
+
+        /*
+        link_hardware(this_ptr as u64, 0, 2, 8);
+        setup_hardware(this_ptr as u64, 0, 2, 8, 0);
+        */
+
+        let visual_order: [i32; 9] = [2, 1, 0, 6, 5, 4, 7, 3, 8];
+        for i in 0..9usize {
+            let current = visual_order[i];
+            let next = visual_order[(i + 1) % 9];
+            link_hardware(this_ptr as u64, 1, current, next);
+        }
+
+        setup_hardware(this_ptr as u64, 1, 2, 8, 0);
+    }
+}
+
+/*extern "C" fn mod_menu_unk_0x498(this: *mut ScreenModMenu) {
+    let this_ptr = this;
+    let this = unsafe { &mut *this };
 
     unsafe {
         let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
@@ -1389,64 +1755,12 @@ extern "C" fn mod_menu_unk_0x498(this: u64) {
         for i in 0..9usize {
             let current = visual_order[i];
             let next = visual_order[(i + 1) % 9];
-            link_hardware(this, 1, current, next);
+            link_hardware(this_ptr as u64, 1, current, next);
         }
 
-        setup_hardware(this, 1, 2, 8, 0);
+        setup_hardware(this_ptr as u64, 1, 2, 8, 0);
     }
-}
-
-#[repr(C)]
-pub struct Heap {
-    _data: [u8; 224],
-}
-
-#[repr(C)]
-pub struct ListNode {
-    pub prev: *mut ListNode, // 0x00
-    pub next: *mut ListNode, // 0x08
-}
-
-#[repr(C)]
-pub struct IDisposer<V> {
-    pub vtable: *const V,
-    pub disposer_heap: *mut Heap,
-    pub list_node: ListNode,
-}
-
-#[repr(C)]
-pub struct InternalCriticalSectionStorage {
-    pub data: [u8; 4],
-}
-
-#[repr(C)]
-pub union MutexUnion {
-    pub mutex_image: [i32; 1],
-    pub mutex: std::mem::ManuallyDrop<InternalCriticalSectionStorage>,
-}
-
-#[repr(C, packed)]
-pub struct MutexType {
-    pub state: u8,
-    pub is_recursive: bool,
-    pub lock_level: i32,
-    pub nest_count: i32,
-    pub owner_thread: *const c_void,
-    pub mutex_union: MutexUnion,
-}
-
-#[repr(C)]
-pub struct CriticalSection {
-    pub disposer: IDisposer<c_void>,
-    pub critical_section_inner: MutexType,
-}
-
-#[repr(C)]
-pub struct OffsetList {
-    pub start_end: ListNode,
-    pub count: i32,
-    pub offset: i32,
-}
+}*/
 
 #[repr(C)]
 pub struct LayoutManager {
@@ -1460,39 +1774,42 @@ pub struct LayoutManager {
 pub struct SomeKindOfListMap {
     pub count: i32,
     pub capacity: i32,
-    pub data_buffer: *const c_void,
+    pub data_buffer: *mut u64,
     pub free_list_head: *mut u64,
-    pub free_list_tail: *const c_void,
+    pub free_list_tail: *mut u64,
     pub nodes: [ListNode; 12],
     pub objects: [*const c_void; 12],
 }
 
-#[repr(C)]
+#[repr(C, packed)]
 pub struct BaseScreen<V> {
     pub base_idisposer: IDisposer<V>,
-    pub scene_manager: *const c_void,
-    pub layout_panes: *const c_void,
-    pub layout_manager: *const LayoutManager,
+    pub scene_manager: *mut c_void,
+    pub layout_panes: *mut c_void,
+    pub layout_manager: *mut LayoutManager,
     pub render_node: ListNode,
     pub update_node: ListNode,
     pub pad_58: [u8; 24],
     pub event_node: ListNode,
-    pub child_list_1: OffsetList,
+    pub child_list_1: OffsetList<c_void>,
     pub node_4: ListNode,
     pub unk_a8: u32,
     pub screen_id: u32,
     pub node_5: ListNode,
     pub unk_c0: u64,
-    pub child_list_2: OffsetList,
+    pub child_list_2: OffsetList<c_void>,
     pub parent_heap: *const c_void,
     pub unk_e8: i32,
     pub pad_ec: u32,
     pub ui_allocator: *const c_void,
-    pub currently_focuesd_node: *const c_void,
+    pub currently_focused_node: *const c_void,
     pub pad_100: [u8; 24],
     pub camera_fov: f32,
     pub input_mode: u8,
-    pub pad_11e: [u8; 3],
+    pub close_intent: i8,
+    pub unk_11e: u8,
+    pub unk_11f: u8,
+    pub unk_120: u8,
     pub unk_state_2: u16,
     pub is_visible: bool,
     pub input_flags: u32,
@@ -1511,7 +1828,6 @@ pub struct BaseScreen<V> {
     pub pad_299: [u8; 3],
     pub base_scale: f32,
     pub screen_lock: CriticalSection,
-    pub tertiary_vtable: *const c_void,
 
     pub pad_2de: [u8; 104],
 }
@@ -1522,7 +1838,7 @@ pub struct ScreenModMenu {
     pub navigation_map: SomeKindOfListMap,
     pub is_input_enabled: bool,
     pub transition_state: u8,
-    pub is_unlocked: [bool; 8],
+    pub unk_48a: [bool; 8],
     pub is_initialized: bool,
 
     pub pad_494: u8,
@@ -1530,14 +1846,21 @@ pub struct ScreenModMenu {
     pub pending_action_id: i32,
     pub action_timer: i32,
 
-    pub pad_49c: [u8; 20],
+    pub unk_49c: u32,
+    pub unk_4a0: u32,
+    pub unk_4a4: u32,
+    pub unk_4a8: u32,
+    pub pad_4a9: [u8; 2],
 
     pub anim_in_from_bg: *const c_void,
     pub anim_out_to_bg: *const c_void,
+    pub anim_short_in: *const c_void,
 
-    pub pad_4c0: [u8; 12],
+    pub unk_4c8: u8,
+    pub pad_4c9: [u8; 3],
 
     pub anim_frame_counter: i32,
 }
 
+const _: () = assert!(core::mem::size_of::<BaseScreen<c_void>>() == 0x348);
 const _: () = assert!(core::mem::size_of::<ScreenModMenu>() == 0x4D0);
