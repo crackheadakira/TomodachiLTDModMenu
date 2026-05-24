@@ -1,4 +1,5 @@
 mod eui;
+mod eui_controller;
 mod fsm_ext;
 mod mod_menu;
 mod patcher;
@@ -11,7 +12,7 @@ use std::{
 };
 
 use crate::{
-    eui::EuiController,
+    eui_controller::EuiController,
     fsm_ext::GAMEPLAY_CONTROLLER,
     mod_menu::{MOD_MENU_HASH, MOD_MENU_OBJ_PTR, MOD_MENU_TYPE_INFO_PTR},
     ui_framework::ButtonState,

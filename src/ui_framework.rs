@@ -87,12 +87,12 @@ macro_rules! install_buttons {
 
                 if btn.click_state == 2 && btn.state_flags == 4 {
                     if let Some((bflyt, pane, controller)) = $crate::ui_framework::get_button_identity(btn, context_ptr) {
-                        println!("[Scanner] ctrl: {controller:#2X}, \"{bflyt}\", \"{pane}\"");
+                        println!("[Scanner] btn: {btn_ptr:p} ctrl: {controller:#2X}, \"{bflyt}\", \"{pane}\"");
 
                         $(
                             if bflyt == $bflyt && pane == $pane {
                                 btn.click_state = 0;
-                                $action(btn, $crate::eui::EuiController::new(controller));
+                                $action(btn, $crate::eui_controller::EuiController::new(controller));
                             }
                         )*
                     }

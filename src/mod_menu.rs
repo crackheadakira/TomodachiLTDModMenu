@@ -3,12 +3,15 @@ use std::mem::MaybeUninit;
 use std::ops::Sub;
 use std::sync::atomic::{AtomicU64, Ordering};
 
+use skyline::nn::ui2d::Layout;
+
+use crate::eui::ButtonBase;
 use crate::sead::{
     container::{ListNode, OffsetList},
     heap::{Heap, IDisposer},
     thread::CriticalSection,
 };
-use crate::{eui::EuiController, ui_framework::ButtonState};
+use crate::{eui_controller::EuiController, ui_framework::ButtonState};
 
 pub const fn murmurhash3(data: &[u8]) -> u32 {
     const C1: u32 = 0xcc9e2d51;
@@ -476,8 +479,8 @@ pub struct ModMenuVTable {
     pub app_button_off_start: extern "C" fn(), // ret
     pub app_button_off_end: extern "C" fn(),   // ret
 
-    pub app_button_down_start: extern "C" fn(u64, u64), // ret
-    pub app_button_down_end: extern "C" fn(),           // ret
+    pub app_button_down_start: extern "C" fn(*mut ScreenModMenu, *mut ButtonBase),
+    pub app_button_down_end: extern "C" fn(), // ret
 
     pub app_button_cancel_start: extern "C" fn(), // ret
     pub app_button_cancel_end: extern "C" fn(),   // ret
@@ -495,7 +498,7 @@ pub struct ModMenuVTable {
     pub unk_0x478: extern "C" fn(u64),
 
     pub app_open_start_2: extern "C" fn(u64), // eui::screen
-    pub set_component_closed_state: extern "C" fn(u64, i32, u32),
+    pub set_button_state: extern "C" fn(u64, i32, u32),
 
     pub unk_0x490: extern "C" fn(*mut ScreenModMenu, u32),
     pub unk_0x498: extern "C" fn(*mut ScreenModMenu),
@@ -697,7 +700,7 @@ pub unsafe fn initialize_vtable(text_base: u64) {
         unk_0x478: std::mem::transmute(text_base + 0x7647f4),
 
         app_open_start_2: std::mem::transmute(text_base + 0x79692c),
-        set_component_closed_state: std::mem::transmute(text_base + 0x215bcec),
+        set_button_state: std::mem::transmute(text_base + 0x215bcec),
 
         unk_0x490: mod_menu_unk_0x490,
         unk_0x498: mod_menu_unk_0x498,
@@ -714,7 +717,7 @@ extern "C" fn mod_menu_app_do_initialize(this: *mut ScreenModMenu) {
 
         this.is_initialized = true;
 
-        this.unk_48a = [true; 8];
+        this.is_button_enabled = [true; 8];
 
         let find_anim: extern "C" fn(u64, *const u8, i32) -> u64 =
             std::mem::transmute(text_base + 0x48a84);
@@ -747,7 +750,6 @@ extern "C" fn mod_menu_app_open_start(this: *mut ScreenModMenu) {
 
         let mut layout_msg_buf = [0u64; 2];
         let scene_manager = (this.base.scene_manager) as *mut u64 as u64;
-        let layout_manager = this.base.layout_manager as *mut u64 as u64;
 
         let load_text_from_mal: extern "C" fn(
             u64,
@@ -761,13 +763,13 @@ extern "C" fn mod_menu_app_open_start(this: *mut ScreenModMenu) {
         let text_pane = b"T_Text_00\0".as_ptr();
         let text_id = b"L_ModBtn_03\0".as_ptr();
 
-        let component_6 = get_layout_node(layout_manager, 6);
+        let button_6 = get_button(this.base.layout_manager, 6);
 
-        if component_6 != 0 {
+        if let Some(btn) = button_6 {
             load_text_from_mal(
                 this_ptr as u64,
                 0.0,
-                *((component_6 + 0x20) as *const u64),
+                btn.base.layout as u64,
                 &text_pane,
                 &text_id,
                 0,
@@ -776,52 +778,45 @@ extern "C" fn mod_menu_app_open_start(this: *mut ScreenModMenu) {
 
         this.anim_frame_counter = 0;
 
-        let get_anim_length: extern "C" fn(u64) -> u16 = std::mem::transmute(text_base + 0x243a60);
-
         // inlined FUN_71020a604c
         for i in 0..9i32 {
-            let comp = get_layout_node(layout_manager, i);
-            if comp != 0 {
-                let scene_manager = *((comp + 0x20) as *const u64);
-                if scene_manager != 0 {
-                    let anim_ctrl = *((scene_manager + 0x70) as *const u64);
-                    if anim_ctrl != 0 {
-                        let length = get_anim_length(anim_ctrl);
-                        *((anim_ctrl + 0x20) as *mut f32) = (length as f32) * 0.5;
+            if let Some(button) = get_button(this.base.layout_manager, i) {
+                if let Some(layout) = button.base.get_layout() {
+                    if let Some(loop_anim) = layout.get_loop_animator() {
+                        loop_anim.base.base.frame =
+                            ((*loop_anim.base.base.res).num_frames as f32) * 0.5;
                     }
                 }
             }
         }
 
-        ((*this.base.base_idisposer.vtable).set_component_closed_state)(this_ptr as u64, 7, 0);
-
-        if this.unk_4c8 == 0 {
+        // Presumably has something to do with introduction & tutorials so we just skip these.
+        // ((*this.base.base_idisposer.vtable).set_button_state)(this_ptr as u64, 7, 0);
+        /*if this.unk_4c8 == 0 {
             if this.pending_action_id == -1 {
                 let fun_5e44: extern "C" fn(u64) = std::mem::transmute(text_base + 0x20a5e44);
                 fun_5e44(this_ptr as u64);
 
-                ((*this.base.base_idisposer.vtable).set_component_closed_state)(
+                ((*this.base.base_idisposer.vtable).set_button_state)(
                     this_ptr as u64,
                     0,
-                    this.unk_48a[0] as u32,
+                    this.is_button_enabled[0] as u32,
                 );
-                ((*this.base.base_idisposer.vtable).set_component_closed_state)(
+                ((*this.base.base_idisposer.vtable).set_button_state)(
                     this_ptr as u64,
                     6,
-                    this.unk_48a[6] as u32,
+                    this.is_button_enabled[6] as u32,
                 );
             }
 
             this.unk_4c8 = 0;
-        }
+        }*/
 
         let priorities = [2, 1, 0, 6, 5, 4, 7, 3, 8];
         let mut final_id = -1i32;
         for &id in &priorities {
-            let comp = get_layout_node(layout_manager, id);
-            if comp != 0 {
-                let flags = *((comp + 0x40) as *const u8);
-                if (flags >> 2 & 1) != 0 {
+            if let Some(button) = get_button(this.base.layout_manager, id) {
+                if (button.flags >> 2 & 1) != 0 {
                     final_id = id;
                     break;
                 }
@@ -836,26 +831,31 @@ extern "C" fn mod_menu_app_open_start(this: *mut ScreenModMenu) {
     }
 }
 
-unsafe fn get_layout_node(list_manager: u64, target_id: i32) -> u64 {
-    if list_manager == 0 {
-        return 0;
+unsafe fn get_button<'a>(
+    layout_manager: *mut LayoutManager,
+    target_id: i32,
+) -> Option<&'a mut ButtonBase> {
+    if layout_manager.is_null() {
+        return None;
     }
 
-    let mut current_node = *((list_manager + 0x10) as *const u64);
+    let layout_mgr_u8 = layout_manager as *mut u8;
 
-    let tail_sentinel = list_manager + 8;
+    let mut current_node = *(layout_mgr_u8.add(0x10) as *const *mut u8);
+    let tail_sentinel = layout_mgr_u8.add(0x8);
 
-    while current_node != tail_sentinel && current_node != 0 {
-        let current_id = *((current_node + 0x3c) as *const i32);
+    while !current_node.is_null() && current_node != tail_sentinel {
+        let current_id = *(current_node.add(0x3c) as *const i32);
 
         if current_id == target_id {
-            return current_node - 8;
+            let btn_ptr = current_node.sub(8) as *mut ButtonBase;
+            return btn_ptr.as_mut();
         }
 
-        current_node = *((current_node + 8) as *const u64);
+        current_node = *(current_node.add(0x8) as *const *mut u8);
     }
 
-    0
+    None
 }
 
 extern "C" fn mod_menu_app_close_start(this: *mut ScreenModMenu) {
@@ -911,7 +911,7 @@ extern "C" fn mod_menu_app_close_end(this: *mut ScreenModMenu) {
         }
 
         let f_var_1 = fun_710215b208(this_ptr as u64, 4);
-        if this.unk_48a[5] && (0.0 < f_var_1) {
+        if this.is_button_enabled[5] && (0.0 < f_var_1) {
             fun_710090d3c0(0, this_ptr as u64, 4);
         }
 
@@ -964,56 +964,66 @@ extern "C" fn mod_menu_do_after_build_layout(this: *mut ScreenModMenu) {
     }
 }
 
-extern "C" fn mod_menu_btn_0(this: u64, button_ptr: u64) {
-    println!("[ModMenu] Button 0 pressed, button_ptr={button_ptr:#X}");
+fn mod_menu_btn_0(this: &mut ScreenModMenu, button: &mut ButtonBase) {
+    println!("[ModMenu] Button 0 pressed");
 }
 
-extern "C" fn mod_menu_btn_1(this: u64, button_ptr: u64) {
-    println!("[ModMenu] Button 1 pressed, button_ptr={button_ptr:#X}");
+fn mod_menu_btn_1(this: &mut ScreenModMenu, button: &mut ButtonBase) {
+    println!("[ModMenu] Button 1 pressed");
 }
 
-extern "C" fn mod_menu_btn_2(this: u64, button_ptr: u64) {
-    println!("[ModMenu] Button 2 pressed, button_ptr={button_ptr:#X}");
+fn mod_menu_btn_2(this: &mut ScreenModMenu, button: &mut ButtonBase) {
+    println!("[ModMenu] Button 2 pressed");
 }
 
-extern "C" fn mod_menu_btn_3(this: u64, button_ptr: u64) {
-    println!("[ModMenu] Button 3 pressed, button_ptr={button_ptr:#X}");
+fn mod_menu_btn_3(this: &mut ScreenModMenu, button: &mut ButtonBase) {
+    println!("[ModMenu] Button 3 pressed");
 }
 
-extern "C" fn mod_menu_btn_4(this: u64, button_ptr: u64) {
-    println!("[ModMenu] Button 4 pressed, button_ptr={button_ptr:#X}");
+fn mod_menu_btn_4(this: &mut ScreenModMenu, button: &mut ButtonBase) {
+    println!("[ModMenu] Button 4 pressed");
 }
 
-extern "C" fn mod_menu_btn_5(this: u64, button_ptr: u64) {
-    println!("[ModMenu] Button 5 pressed, button_ptr={button_ptr:#X}");
+fn mod_menu_btn_5(this: &mut ScreenModMenu, button: &mut ButtonBase) {
+    println!("[ModMenu] Button 5 pressed");
 }
 
-extern "C" fn mod_menu_btn_6(this: u64, button_ptr: u64) {
-    println!("[ModMenu] Button 6 pressed, button_ptr={button_ptr:#X}");
+fn mod_menu_btn_6(this: &mut ScreenModMenu, button: &mut ButtonBase) {
+    println!("[ModMenu] Button 6 pressed");
 }
 
-extern "C" fn mod_menu_btn_7(this: u64, button_ptr: u64) {
-    println!("[ModMenu] Button 7 pressed, button_ptr={button_ptr:#X}");
+fn mod_menu_btn_7(this: &mut ScreenModMenu, button: &mut ButtonBase) {
+    println!("[ModMenu] Button 7 pressed");
 }
 
-extern "C" fn mod_menu_btn_8(this: u64, button_ptr: u64) {
-    println!("[ModMenu] Button 8 pressed, button_ptr={button_ptr:#X}");
+fn mod_menu_btn_8(this: &mut ScreenModMenu, button: &mut ButtonBase) {
+    println!("[ModMenu] Button 8 pressed");
 }
 
-extern "C" fn my_button_click_handler(this: u64, button_ptr: u64) {
-    let button_id = unsafe { *((button_ptr + 0x44) as *const i32) };
+extern "C" fn my_button_click_handler(this: *mut ScreenModMenu, button: *mut ButtonBase) {
+    let this = unsafe { &mut *this };
+    let button_ptr = button;
+    let button = unsafe { &mut *button };
 
-    match button_id {
-        0 => mod_menu_btn_2(this, button_ptr),
-        1 => mod_menu_btn_1(this, button_ptr),
-        2 => mod_menu_btn_0(this, button_ptr),
-        3 => mod_menu_btn_7(this, button_ptr),
-        4 => mod_menu_btn_5(this, button_ptr),
-        5 => mod_menu_btn_4(this, button_ptr),
-        6 => mod_menu_btn_3(this, button_ptr),
-        7 => mod_menu_btn_6(this, button_ptr),
-        8 => mod_menu_btn_8(this, button_ptr),
+    println!("{button:#?}");
+
+    match button.slide_index {
+        0 => mod_menu_btn_2(this, button),
+        1 => mod_menu_btn_1(this, button),
+        2 => mod_menu_btn_0(this, button),
+        3 => mod_menu_btn_7(this, button),
+        4 => mod_menu_btn_5(this, button),
+        5 => mod_menu_btn_4(this, button),
+        6 => mod_menu_btn_3(this, button),
+        7 => mod_menu_btn_6(this, button),
+        8 => mod_menu_btn_8(this, button),
         _ => {}
+    }
+
+    // TODO: make UniteButton struct
+    unsafe {
+        let timer_ptr = (button_ptr as *mut u8).add(0xac) as *mut i32;
+        *timer_ptr = 200;
     }
 }
 
@@ -1024,13 +1034,11 @@ extern "C" fn mod_menu_app_do_update(this: *mut ScreenModMenu) {
     unsafe {
         let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
 
-        let get_layout_node_with_ptr: extern "C" fn(*mut LayoutManager, i32) -> *const u8 =
-            std::mem::transmute(text_base + 0x8040b0);
         let fun_7100243a60: extern "C" fn(*const u8) -> i32 =
             std::mem::transmute(text_base + 0x243a60);
         let fun_710215b208: extern "C" fn(*mut ScreenModMenu, i32) -> f32 =
             std::mem::transmute(text_base + 0x215b208);
-        let is_node_clicked: extern "C" fn(*const u8) -> bool =
+        let is_button_clicked: extern "C" fn(*mut ButtonBase) -> bool =
             std::mem::transmute(text_base + 0x230a754);
         let fun_710090d3c0: extern "C" fn(u32, *mut BaseScreen<ModMenuVTable>, i32) =
             std::mem::transmute(text_base + 0x90d3c0);
@@ -1062,41 +1070,28 @@ extern "C" fn mod_menu_app_do_update(this: *mut ScreenModMenu) {
         this.anim_frame_counter += i_var_8;
 
         for i in 0..9usize {
-            unsafe {
-                let node = get_layout_node_with_ptr(this.base.layout_manager, i as i32);
+            if let Some(button) = get_button(this.base.layout_manager, i as i32) {
+                if let Some(layout) = button.base.get_layout() {
+                    if let Some(loop_anim) = layout.get_loop_animator() {
+                        let bit_check = (0x6f >> (i & 0x3f)) & 1;
 
-                if !node.is_null() {
-                    let ptr1 = *((node as *const u8).add(0x20) as *const *const u8);
+                        let num_frames = (*loop_anim.base.base.res).num_frames as f32;
+                        if bit_check != 0 && num_frames != 0.0 {
+                            let button_id = ENTRIES[i].id;
 
-                    if !ptr1.is_null() {
-                        let l_var_17 = *(ptr1.add(0x70) as *const *const u8);
+                            let f_var_18 = fun_710215b208(this_ptr, button_id);
 
-                        if !l_var_17.is_null() {
-                            let u_var_7 = fun_7100243a60(l_var_17);
+                            let should_process = if i == 2 {
+                                f_var_18 == 3.0
+                            } else {
+                                f_var_18 == 1.0
+                            };
 
-                            let bit_check = (0x6f >> (i & 0x3f)) & 1;
-
-                            if bit_check != 0 && u_var_7 != 0 {
-                                let button_id = ENTRIES[i].id;
-
-                                let f_var_18 = fun_710215b208(this_ptr, button_id);
-
-                                let should_process = if i == 2 {
-                                    f_var_18 == 3.0
-                                } else {
-                                    f_var_18 == 1.0
-                                };
-
-                                if should_process {
-                                    let float_val = *(l_var_17.add(0x20) as *const f32);
-
-                                    if (u_var_7 as f32) <= float_val + (i_var_8 as f32) {
-                                        let pad_40_byte = *(node as *const u8).add(0x40);
-                                        if (pad_40_byte >> 4) & 1 != 0 {
-                                            is_node_clicked(node);
-                                        }
-                                    }
-                                }
+                            if should_process
+                                && num_frames <= (loop_anim.base.base.frame + (i_var_8 as f32))
+                                && (button.flags & 1) != 0
+                            {
+                                is_button_clicked(button as *mut ButtonBase);
                             }
                         }
                     }
@@ -1139,16 +1134,61 @@ extern "C" fn mod_menu_app_do_update(this: *mut ScreenModMenu) {
             }
         }
 
+        let mut input_free = true;
+        for i in 0..9 {
+            let slot = &mut **this.navigation_map.button_map.add(i);
+
+            if slot.neighbor >= 0 {
+                if let Some(button) = get_button(this.base.layout_manager, i as i32) {
+                    let u_var_9 = fun_71008cb6bc(this_ptr as u64, slot.neighbor);
+
+                    if (u_var_9 & 1) != 0 {
+                        let f_var_18 = fun_710215b208(this_ptr, slot.neighbor);
+                        let b_var_6 = fun_7102309cfc(button as *mut ButtonBase as u64);
+
+                        if f_var_18 >= 2.0 && b_var_6 {
+                            ((*button.base.vtable).play_disable_anim)(
+                                button as *mut ButtonBase as u64,
+                                false,
+                            );
+                        }
+
+                        input_free = false;
+                        break;
+                    } else {
+                        let u_var_9_alt = fun_710215b490(this_ptr as u64, slot.neighbor);
+
+                        if (u_var_9_alt & 1) != 0 {
+                            for j in 0..=8 {
+                                if let Some(sub_button) = get_button(this.base.layout_manager, j) {
+                                    ((*sub_button.base.vtable).set_active)(
+                                        button as *mut ButtonBase as u64,
+                                        1,
+                                    );
+                                }
+                            }
+
+                            ((*this.base.base_idisposer.vtable).set_button_state)(
+                                this_ptr as u64,
+                                i as i32,
+                                1,
+                            );
+                        }
+                    }
+                }
+            }
+        }
+
         let mut b_var_5 = false;
         if this.pending_action_id == -1 {
-            // as we skip the block for unlocking buttons, it'll always be true.
-            b_var_5 = true;
+            b_var_5 = input_free;
         }
 
         this.is_input_enabled = b_var_5;
+        input_free = this.base.unk_11e == 2 && this.base.close_intent > -1;
 
         // closes when X is clicked, as that is the button that it was spawned with
-        if (this.base.unk_11e == 2 && this.base.close_intent > -1)
+        if input_free
             && fun_710231d85c(this_ptr)
             && (fun_710230b308(this.base.layout_manager as u64) & 1) == 0
             && this.is_input_enabled
@@ -1212,14 +1252,14 @@ extern "C" fn mod_menu_app_do_update(this: *mut ScreenModMenu) {
 
         let is_ready = this.base.unk_11e == 2 && this.base.close_intent > -1;
 
-        if is_ready && !fun_710231d85c(this_ptr) {
-            if this.unk_48a[5] {
+        /*if is_ready && !fun_710231d85c(this_ptr) {
+            if this.is_button_enabled[5] {
                 let f_var_17 = fun_710215b208(this_ptr, 4);
                 if f_var_17 > 0.0 {
                     fun_710090d3c0(0, core::ptr::addr_of_mut!(this.base), 4);
                 }
             }
-        }
+        }*/
     }
 }
 
@@ -1320,7 +1360,7 @@ extern "C" fn mod_menu_unk_0x490(this: *mut ScreenModMenu, focus_flags: u32) {
             let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
 
             for i in 0..this.navigation_map.count {
-                ((*this.base.base_idisposer.vtable).set_component_closed_state)(
+                ((*this.base.base_idisposer.vtable).set_button_state)(
                     this_ptr as u64,
                     i,
                     focus_flags & 1,
@@ -1542,7 +1582,7 @@ pub struct ScreenModMenu {
     pub navigation_map: SomeKindOfListMap,
     pub is_input_enabled: bool,
     pub transition_state: u8,
-    pub unk_48a: [bool; 8],
+    pub is_button_enabled: [bool; 8],
     pub is_initialized: bool,
 
     pub pad_494: u8,
@@ -1561,7 +1601,8 @@ pub struct ScreenModMenu {
     pub anim_short_in: *const c_void,
 
     pub unk_4c8: u8,
-    pub pad_4c9: [u8; 3],
+    pub has_tutorial: bool,
+    pub pad_4ca: [u8; 2],
 
     pub anim_frame_counter: i32,
 }
