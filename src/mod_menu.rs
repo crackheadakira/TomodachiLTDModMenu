@@ -471,10 +471,9 @@ pub struct ModMenuVTable {
     pub unk_0x3d0: extern "C" fn(),                               // ret
     pub unk_0x3d8: extern "C" fn(),                               // ret
     pub unk_0x3e0: extern "C" fn(u64, u64, u64, u64, u64, u64, u64, u64),
-    pub unk_0x3e8: extern "C" fn(u64),
 
-    pub app_button_on_start: extern "C" fn(), // ret
-    pub app_button_on_end: extern "C" fn(),   // ret
+    pub app_button_on_start: extern "C" fn(u64), // ret
+    pub app_button_on_end: extern "C" fn(),      // ret
 
     pub app_button_off_start: extern "C" fn(), // ret
     pub app_button_off_end: extern "C" fn(),   // ret
@@ -485,6 +484,7 @@ pub struct ModMenuVTable {
     pub app_button_cancel_start: extern "C" fn(), // ret
     pub app_button_cancel_end: extern "C" fn(),   // ret
 
+    pub unk_0x428: extern "C" fn(), // ret,
     pub unk_0x430: extern "C" fn(), // ret
     pub unk_0x438: extern "C" fn(), // ret
     pub unk_0x440: extern "C" fn(),
@@ -672,9 +672,8 @@ pub unsafe fn initialize_vtable(text_base: u64) {
         unk_0x3d0: stub,
         unk_0x3d8: stub,
         unk_0x3e0: std::mem::transmute(text_base + 0x215c4e0),
-        unk_0x3e8: mod_menu_unk_0x3e8,
 
-        app_button_on_start: stub,
+        app_button_on_start: mod_menu_button_on_start,
         app_button_on_end: stub,
 
         app_button_off_start: stub,
@@ -685,6 +684,7 @@ pub unsafe fn initialize_vtable(text_base: u64) {
 
         app_button_cancel_start: stub,
         app_button_cancel_end: stub,
+        unk_0x428: stub,
 
         unk_0x430: stub,
         unk_0x438: stub,
@@ -1335,7 +1335,7 @@ extern "C" fn mod_menu_is_enable_control(this: u64) -> u64 {
     }
 }
 
-extern "C" fn mod_menu_unk_0x3e8(this: u64) {
+extern "C" fn mod_menu_button_on_start(this: u64) {
     unsafe {
         if *((this + 0x4c9) as *const u8) == 0 {
             return;
