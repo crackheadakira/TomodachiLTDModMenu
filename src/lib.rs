@@ -97,11 +97,11 @@ extern "C" fn state_88_enter(context: u64) {
 
         if !island_menu.is_null() {
             // let's just assume for now that it did get the proper one so we skip RTTI guard
-            (((*(*island_menu).vtable()).base).close)(island_menu as *const _ as u64, -1);
+            (*island_menu).close(-1);
         }
 
         if !mod_menu.is_null() {
-            (((*(*mod_menu).vtable()).base).close)(mod_menu as *const _ as u64, 1);
+            (*mod_menu).open(1);
         }
     }
 }
@@ -151,11 +151,11 @@ extern "C" fn state_88_exit(context: u64) {
         let island_menu = find_by_hash(scene_mgr, 0x51861076);
 
         if !mod_menu.is_null() {
-            (((*(*mod_menu).vtable()).base).close)(mod_menu as u64, -1);
+            (*mod_menu).close(-1);
         }
 
         if !island_menu.is_null() {
-            (((*(*island_menu).vtable()).base).open)(island_menu as u64, 1);
+            (*island_menu).open(1);
         }
     }
 }

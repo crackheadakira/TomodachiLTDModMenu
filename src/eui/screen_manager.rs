@@ -223,19 +223,8 @@ pub struct BaseScreenVtable<T> {
     pub play_screen_open_audio: extern "C" fn(u64), // eui::screen
 }
 
-pub trait ScreenVTable {}
-
-impl<T> ScreenVTable for BaseScreenVtable<T> {}
-
-impl<V: ScreenVTable> BaseScreen<V> {
-    #[inline(always)]
-    pub fn vtable(&self) -> &V {
-        unsafe { &*self.vtable }
-    }
-}
-
 #[repr(C, packed)]
-pub struct BaseScreen<V: ScreenVTable = BaseScreenVtable<c_void>> {
+pub struct BaseScreen<V = BaseScreenVtable<c_void>> {
     // Inherited from IDisposer
     pub vtable: *const V,
     pub disposer_heap: *mut Heap,
@@ -280,19 +269,6 @@ pub struct BaseScreen<V: ScreenVTable = BaseScreenVtable<c_void>> {
     pub screen_lock: CriticalSection,
 
     pub pad_2de: [u8; 104],
-}
-
-impl<V: ScreenVTable> BaseScreen<V> {
-    #[inline(always)]
-    pub fn ptr(&self) -> u64 {
-        self as *const _ as u64
-    }
-}
-
-impl<T: ScreenVTable> BaseScreen<T> {
-    pub fn is_visible(&self) -> bool {
-        self.screen_state == ScreenState::Opened && self.draw_state > DrawState::Closing
-    }
 }
 
 // TODO: fill it in properly
@@ -375,3 +351,31 @@ const _: () = assert!(core::mem::size_of::<ScreenFactory>() == 0x30);
 const _: () = assert!(core::mem::size_of::<ScreenFactoryVtable>() == 0xc0);
 const _: () = assert!(core::mem::size_of::<ScreenInfo>() == 0x38);
 const _: () = assert!(core::mem::size_of::<ScreenManager>() == 0x1470);
+
+impl<V> BaseScreen<V> {
+    #[inline(always)]
+    pub fn as_ptr(&self) -> u64 {
+        self as *const _ as u64
+    }
+
+    #[inline(always)]
+    pub fn vtable(&self) -> &BaseScreenVtable<u64> {
+        unsafe { &*(self.vtable as *const BaseScreenVtable<u64>) }
+    }
+
+    pub fn close(&self, arg: i32) -> u64 {
+        (self.vtable().close)(self.as_ptr(), arg)
+    }
+
+    pub fn open(&self, arg: i32) -> u64 {
+        (self.vtable().open)(self.as_ptr(), arg)
+    }
+
+    pub fn get_ui_controller(&self) -> u64 {
+        (self.vtable().get_ui_controller)()
+    }
+
+    pub fn is_visible(&self) -> bool {
+        self.screen_state == ScreenState::Opened && self.draw_state > DrawState::Closing
+    }
+}

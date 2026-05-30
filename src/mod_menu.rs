@@ -5,7 +5,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 use skyline::nn::ui2d::Layout;
 
-use crate::eui::screen_manager::{BaseScreenVtable, ScreenVTable};
+use crate::eui::screen_manager::BaseScreenVtable;
 use crate::eui::Animator;
 use crate::eui::{screen_manager::BaseScreen, ButtonBase, ButtonGroup, LayoutEx};
 use crate::sead::{
@@ -317,8 +317,6 @@ pub struct ModMenuVTable {
     pub unk_0x490: extern "C" fn(*mut ScreenModMenu, u32),
     pub unk_0x498: extern "C" fn(*mut ScreenModMenu),
 }
-
-impl ScreenVTable for ModMenuVTable {}
 
 extern "C" fn stub_max() -> u64 {
     0xffffffff
@@ -710,7 +708,7 @@ extern "C" fn mod_menu_do_after_build_layout(this: *mut ScreenModMenu) {
             i32,
         ) = std::mem::transmute(text_base + 0x8646b8);
 
-        ((*this.base.vtable()).unk_0x498)(this_ptr);
+        ((*this.base.vtable).unk_0x498)(this);
 
         let count = this.navigation_map.count;
         if count != 0 {
@@ -944,7 +942,7 @@ extern "C" fn mod_menu_app_do_update(this: *mut ScreenModMenu) {
                                 }
                             }
 
-                            ((*this.base.vtable()).set_button_state)(this_ptr as u64, i as i32, 1);
+                            ((*this.base.vtable).set_button_state)(this.base.as_ptr(), i as i32, 1);
                         }
                     }
                 }
@@ -965,14 +963,14 @@ extern "C" fn mod_menu_app_do_update(this: *mut ScreenModMenu) {
             && this.is_input_enabled
             && this.transition_state == 0
         {
-            let ui_controller = (((*this.base.vtable()).base.get_ui_controller)()) as *const u8;
+            let ui_controller = (*this).base.get_ui_controller() as *const u8;
 
             if !ui_controller.is_null() {
                 let btn_state = *(ui_controller.add(8) as *const u8);
 
                 if (btn_state >> 3) & 1 != 0 {
                     fun_710215ad58(this_ptr);
-                    (((*this.base.vtable()).base).close)(this_ptr as u64, -1);
+                    (*this).base.close(-1);
                 }
             }
         }
@@ -1121,7 +1119,6 @@ extern "C" fn mod_menu_button_on_start(this: u64) {
 
 extern "C" fn mod_menu_unk_0x490(this: *mut ScreenModMenu, focus_flags: u32) {
     println!("[Mod] unk_0x490");
-    let this_ptr = this;
     let this = unsafe { &mut *this };
 
     unsafe {
@@ -1129,7 +1126,7 @@ extern "C" fn mod_menu_unk_0x490(this: *mut ScreenModMenu, focus_flags: u32) {
             let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
 
             for i in 0..this.navigation_map.count {
-                ((*this.base.vtable()).set_button_state)(this_ptr as u64, i, focus_flags & 1);
+                ((*this.base.vtable).set_button_state)(this.base.as_ptr(), i, focus_flags & 1);
             }
         }
     }
