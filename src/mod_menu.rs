@@ -5,6 +5,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 use skyline::nn::ui2d::Layout;
 
+use crate::eui::screen_manager::{BaseScreenVtable, ScreenVTable};
 use crate::eui::Animator;
 use crate::eui::{screen_manager::BaseScreen, ButtonBase, ButtonGroup, LayoutEx};
 use crate::sead::{
@@ -310,200 +311,14 @@ extern "C" fn mod_menu_ctor(obj: u64) {
 
 #[repr(C)]
 pub struct ModMenuVTable {
-    pub destructor1: extern "C" fn(u64),
-    pub destructor2: extern "C" fn(u64),
-
-    pub check_derived_runtime_type_info: extern "C" fn(u64, u64) -> u64,
-    pub get_runtime_type_info: extern "C" fn() -> u64,
-
-    pub is_enable_control: extern "C" fn(u64) -> u64,
-    pub open: extern "C" fn(u64, i32) -> u64,  // eui::screen
-    pub close: extern "C" fn(u64, i32) -> u64, // eui::screen
-    pub get_ui_controller: extern "C" fn() -> u64,
-
-    pub adjust_box_cursor: extern "C" fn(u64, u64),
-    pub create_box_cursor_node: extern "C" fn(u64, u64),
-
-    pub replace_parts_layout_name: extern "C" fn(u64, u64) -> u64, // eui::screen
-    pub unk_0x5b: extern "C" fn(),                                 // eui::screen
-
-    pub set_animator_state: extern "C" fn(),
-    pub do_create_letter_anim_control: extern "C" fn(u64, u64) -> u64, // eui::screen
-    pub do_create_number_anim_control: extern "C" fn(u64, u64) -> u64, // eui::screen
-
-    pub post_initialize: extern "C" fn(), // eui::screen
-    pub initialize: extern "C" fn(u64, f32, u64, u64, u64, u64, u64, u32, u64, u64), // eui::screen
-    pub update: extern "C" fn(u64),
-    pub draw: extern "C" fn(u64, u64),
-
-    pub unk_0x98: extern "C" fn(), // eui::screen
-    pub unk_0xa0: extern "C" fn(), // eui::screen
-
-    pub get_layout_name: extern "C" fn(u64) -> u64,
-
-    pub get_message_name: extern "C" fn(u64) -> u64, // eui::screen
-    pub get_message_name_2: extern "C" fn(u64) -> u64, // eui::screen
-    pub is_play_parts_in_out: extern "C" fn() -> u64, // eui::screen
-
-    pub is_disallow_hit_lower_screen_on_button_hit: extern "C" fn() -> u64,
-
-    pub do_create_layout: extern "C" fn(u64, u64) -> u64, // eui::screen
-    pub do_create_draw_info_ex: extern "C" fn(u64, u64) -> u64, // eui::screen
-    pub do_create_button_group: extern "C" fn(u64, u64) -> u64, // eui::screen
-
-    pub do_after_build_layout: extern "C" fn(*mut ScreenModMenu),
-
-    pub do_setup_draw_info: extern "C" fn(u64), // eui::screen
-    pub do_create_ui_controller: extern "C" fn() -> u64, // eui::screen
-    pub do_create_resource_accessor: extern "C" fn(u64, u64) -> u64, // eui::screen
-
-    pub do_create_tag_processor: extern "C" fn(u64, u64) -> u64, // eui::screen
-    pub do_build_layout: extern "C" fn(u64, u64, u64),           // eui::screen
-    pub do_build_layout_impl_: extern "C" fn(u64, u64, u64, u64, u64) -> u32, // eui::screen
-    pub do_load_resource: extern "C" fn(u64, u64, u64, u64, u64, u64, u64, u64), // eui::screen
-    pub do_create_slide_list_control: extern "C" fn(u64, u64, u64, u64) -> u64, // eui::screen
-    pub do_initialize: extern "C" fn(u64),                       // eui::screen
-    pub do_update: extern "C" fn(u64),                           // eui::screen
-    pub update_button: extern "C" fn(u64),                       // eui::screen
-    pub get_animation_step: extern "C" fn(u64) -> u32,           // eui::screen
-
-    pub do_draw: extern "C" fn(u64, u64),
-
-    pub do_open_start: extern "C" fn(u64),  // eui::screen
-    pub do_open_end: extern "C" fn(u64),    // eui::screen
-    pub do_close_start: extern "C" fn(u64), // eui::screen
-    pub do_close_end: extern "C" fn(u64),   // eui::screen
-
-    pub do_button_on_start: extern "C" fn(u64), // eui::screen
-    pub do_button_on_end: extern "C" fn(u64),   // eui::screen
-    pub do_button_off_start: extern "C" fn(u64), // eui::screen
-    pub do_button_off_end: extern "C" fn(u64),  // eui::screen
-    pub do_button_down_start: extern "C" fn(u64), // eui::screen
-    pub do_button_down_end: extern "C" fn(u64, u64), // eui::screen
-    pub do_button_cancel_start: extern "C" fn(u64), // eui::screen
-    pub do_button_cancel_end: extern "C" fn(u64), // eui::screen
-
-    pub unk_0x1b8: extern "C" fn() -> u64, // eui::screen
-
-    pub create_asset_info_reader: extern "C" fn() -> u64,
-    pub get_s_link_property_count: extern "C" fn() -> u64,
-    pub set_s_link_property_def: extern "C" fn(),
-    pub get_e_link_property_count: extern "C" fn() -> u64,
-    pub set_e_link_property_def: extern "C" fn(),
-
-    pub copy_controls: extern "C" fn(u64, u64, u64, u64) -> i32, // eui::screen
-    pub is_line_feed_by_character_height: extern "C" fn() -> bool, // eui::screen
-
-    pub unk_0x1f8: extern "C" fn(), // eui::screen
-    pub unk_0x200: extern "C" fn(),
-
-    pub update_control: extern "C" fn(u64),
-    pub open_start: extern "C" fn(u64, u64),
-
-    pub is_open_end: extern "C" fn(u64) -> bool, // eui::screen
-    pub open_end: extern "C" fn(u64),            // eui::screen
-    pub close_start: extern "C" fn(u64, u64),    // eui::screen
-    pub is_close_end: extern "C" fn(u64) -> bool, // eui::screen
-    pub close_end: extern "C" fn(u64),           // eui::screen
-
-    pub is_force_glb_mtx_dirty: extern "C" fn() -> bool,
-    pub update_animator: extern "C" fn(u64),
-    pub register_controller: extern "C" fn(),
-    pub unregister_controller: extern "C" fn(),
-
-    pub setup_pane_after_build: extern "C" fn(u64, f32, u32, u32, u32, i32), // TODO: double-check
-    pub do_initialize_layout: extern "C" fn(u64, u64),
-
-    pub count_effect_link_pane: extern "C" fn(u64, u64, u64),
-    pub create_effect_link_user: extern "C" fn(u64, u64, u32, u64, u64, u64, u64, u64), // eui::screen
-    pub create_sound_link_2_user: extern "C" fn(u64, u64) -> u64, // eui::screen
-    pub invoke_sound_link_2_event: extern "C" fn(u64, u64),       // eui::screen
-
-    pub invoke_sound_link_2_button_event: extern "C" fn(u64, u64, u64) -> bool,
-    pub invoke_sound_link_2_anim_play_event: extern "C" fn(f32, u64, u64, u64, u32),
-
-    pub unk_2xa0: extern "C" fn(u64, u64) -> u32,
-    pub unk_2xa8: extern "C" fn(u64) -> u8,  // eui::screen
-    pub unk_2xb0: extern "C" fn(u64) -> u8,  // eui::screen
-    pub unk_2xb8: extern "C" fn(u64) -> u64, // eui::screen
-    pub unk_2xc0: extern "C" fn(u64) -> u8,  // eui::screen
-    pub unk_2xc8: extern "C" fn(u64) -> u8,  // eui::screen
-
-    pub unk_2xd0: extern "C" fn(u64) -> u64,
-    pub unk_0x2d8: extern "C" fn(u64) -> u32,
-    pub unk_0x2e0: extern "C" fn() -> u64, // mov w0, wzr -> ret
-
-    pub unk_0x2e8: extern "C" fn(u64) -> u8, // eui::screen
-    pub unk_0x2f0: extern "C" fn(u64) -> u8, // eui::screen
-    pub unk_0x2f8: extern "C" fn() -> u64,   // eui::screen, mov x0, xzr -> ret
-    pub unk_0x300: extern "C" fn(u64, u64),
-
-    pub handle_input: extern "C" fn(u64),  // eui::screen
-    pub on_state_change: extern "C" fn(),  // eui::screen
-    pub unk_0x318: extern "C" fn() -> u64, // returns a pointer to string that says "N_CameraMove_00"
-
-    pub app_finish_open: extern "C" fn(u64, u64),
-    pub unk_0x328: extern "C" fn() -> u64, // mov w0, 0xffffffff -> ret
-    pub unk_0x330: extern "C" fn() -> u64, // mov w0, 0x1 -> ret
-    pub unk_0x338: extern "C" fn(u64) -> u8, // mov w0, [x0, 0x298] -> ret
-    pub unk_0x340: extern "C" fn() -> u64, // mov w0, wzr -> ret
-    pub unk_0x348: extern "C" fn() -> u64, // mov w0, 0x1 -> ret
-    pub unk_0x350: extern "C" fn() -> u64, // mov w0, wzr -> ret
-    pub unk_0x358: extern "C" fn() -> u64, // mov w0, wzr -> ret
-    pub unk_0x360: extern "C" fn() -> u64, // mov w0, wzr -> ret
-
-    pub app_setup_draw_info: extern "C" fn() -> u64, // mov w0, wzr -> ret
-
-    pub unk_0x370: extern "C" fn() -> u64, // mov w0, wzr -> ret
-    pub unk_0x378: extern "C" fn(u64) -> f32, // ldr s0, [x0, 0x320] -> fmov s1, 0x3f000000 -> fmul s0, s0, s1 -> ret
-    pub unk_0x380: extern "C" fn(u64) -> u32, // ldr s0, [x0, 0x320] -> ret
-    pub unk_0x388: extern "C" fn(u64) -> f32, // ldr s0, [x0, 0x324] -> fmov s1, 0x3f000000 -> fmul s0, s0, s1 -> ret
-    pub unk_0x390: extern "C" fn(u64) -> u32, // ldr s0, [x0, 0x324] -> ret
-
-    pub app_do_initialize: extern "C" fn(*mut ScreenModMenu),
-    pub app_open_start: extern "C" fn(*mut ScreenModMenu),
-    pub app_open_end: extern "C" fn(), // ret
-
-    pub app_close_start: extern "C" fn(*mut ScreenModMenu),
-    pub app_close_end: extern "C" fn(*mut ScreenModMenu),
-    pub app_do_update: extern "C" fn(*mut ScreenModMenu),
-
-    pub is_deselect_box_cursor_on_close: extern "C" fn() -> bool, // mov w0, wzr -> ret
-    pub unk_0x3d0: extern "C" fn(),                               // ret
-    pub unk_0x3d8: extern "C" fn(),                               // ret
-    pub unk_0x3e0: extern "C" fn(u64, u64, u64, u64, u64, u64, u64, u64),
-
-    pub app_button_on_start: extern "C" fn(u64), // ret
-    pub app_button_on_end: extern "C" fn(),      // ret
-
-    pub app_button_off_start: extern "C" fn(), // ret
-    pub app_button_off_end: extern "C" fn(),   // ret
-
-    pub app_button_down_start: extern "C" fn(*mut ScreenModMenu, *mut ButtonBase),
-    pub app_button_down_end: extern "C" fn(), // ret
-
-    pub app_button_cancel_start: extern "C" fn(), // ret
-    pub app_button_cancel_end: extern "C" fn(),   // ret
-
-    pub unk_0x428: extern "C" fn(), // ret,
-    pub unk_0x430: extern "C" fn(), // ret
-    pub unk_0x438: extern "C" fn(), // ret
-    pub unk_0x440: extern "C" fn(),
-    pub unk_0x448: extern "C" fn(u64, u64, u64),
-    pub unk_0x450: extern "C" fn(u64),     // mov w0, 0x1 -> ret
-    pub unk_0x458: extern "C" fn() -> u64, // mov x0, xzr -> ret
-
-    pub on_process_command: extern "C" fn() -> u64, // ret
-    pub is_scene_mgr_thing: extern "C" fn(),        // ret
-    pub initialize_scene_mgr_thing: extern "C" fn(u64, u32),
-    pub unk_0x478: extern "C" fn(u64),
-
-    pub app_open_start_2: extern "C" fn(u64), // eui::screen
+    pub base: BaseScreenVtable<ScreenModMenu>,
     pub set_button_state: extern "C" fn(u64, i32, u32),
 
     pub unk_0x490: extern "C" fn(*mut ScreenModMenu, u32),
     pub unk_0x498: extern "C" fn(*mut ScreenModMenu),
 }
+
+impl ScreenVTable for ModMenuVTable {}
 
 extern "C" fn stub_max() -> u64 {
     0xffffffff
@@ -531,176 +346,178 @@ pub static mut MOD_MENU_VTABLE: MaybeUninit<ModMenuVTable> = MaybeUninit::uninit
 
 pub unsafe fn initialize_vtable(text_base: u64) {
     MOD_MENU_VTABLE.write(ModMenuVTable {
-        destructor1: mod_menu_destructor1,
-        destructor2: mod_menu_destructor2,
-        check_derived_runtime_type_info: mod_menu_check_rtti,
-        get_runtime_type_info: mod_menu_get_rtti,
-        is_enable_control: mod_menu_is_enable_control,
-        open: std::mem::transmute(text_base + 0x8d9654),
-        close: std::mem::transmute(text_base + 0x7ac858),
-        get_ui_controller: std::mem::transmute(text_base + 0x6911c0),
-        adjust_box_cursor: std::mem::transmute(text_base + 0x215c790),
-        create_box_cursor_node: std::mem::transmute(text_base + 0xa82054),
-        replace_parts_layout_name: std::mem::transmute(text_base + 0x231def8),
-        unk_0x5b: stub,
-        set_animator_state: stub,
-        do_create_letter_anim_control: std::mem::transmute(text_base + 0x215b670),
-        do_create_number_anim_control: std::mem::transmute(text_base + 0x231df34),
-        post_initialize: stub,
-        initialize: std::mem::transmute(text_base + 0x6db5ec),
-        update: std::mem::transmute(text_base + 0x32c788),
-        draw: std::mem::transmute(text_base + 0x231dddc),
-        unk_0x98: stub,
-        unk_0xa0: stub,
-        get_layout_name: std::mem::transmute(text_base + 0x9554e4),
-        get_message_name: std::mem::transmute(text_base + 0x5ef674),
-        get_message_name_2: std::mem::transmute(text_base + 0x6dbff8),
-        is_play_parts_in_out: stub_zero,
-        is_disallow_hit_lower_screen_on_button_hit: stub_one,
-        do_create_layout: std::mem::transmute(text_base + 0xa81ce4),
-        do_create_draw_info_ex: std::mem::transmute(text_base + 0x6dbb84),
-        do_create_button_group: std::mem::transmute(text_base + 0x6dbb3c),
-        do_after_build_layout: mod_menu_do_after_build_layout,
-        do_setup_draw_info: std::mem::transmute(text_base + 0x6ec2b4),
-        do_create_ui_controller: stub_zero,
-        do_create_resource_accessor: std::mem::transmute(text_base + 0x6dbe10),
-        do_create_tag_processor: std::mem::transmute(text_base + 0xa81e90),
-        do_build_layout: std::mem::transmute(text_base + 0x6c9898),
-        do_build_layout_impl_: std::mem::transmute(text_base + 0x6c9980),
-        do_load_resource: std::mem::transmute(text_base + 0xa81d38),
-        do_create_slide_list_control: std::mem::transmute(text_base + 0x80b7ec),
-        do_initialize: std::mem::transmute(text_base + 0x7493ec),
-        do_update: std::mem::transmute(text_base + 0x50520),
-        update_button: std::mem::transmute(text_base + 0x243a70),
-        get_animation_step: std::mem::transmute(text_base + 0x6dbb20),
-        do_draw: std::mem::transmute(text_base + 0x231e1ac),
-        do_open_start: std::mem::transmute(text_base + 0x76477c),
-        do_open_end: std::mem::transmute(text_base + 0x7426e8),
-        do_close_start: std::mem::transmute(text_base + 0x796834),
-        do_close_end: std::mem::transmute(text_base + 0x7a9010),
-        do_button_on_start: std::mem::transmute(text_base + 0x215c648),
-        do_button_on_end: std::mem::transmute(text_base + 0x215c654),
-        do_button_off_start: std::mem::transmute(text_base + 0x215c660),
-        do_button_off_end: std::mem::transmute(text_base + 0x215c66c),
-        do_button_down_start: std::mem::transmute(text_base + 0x215c678),
-        do_button_down_end: std::mem::transmute(text_base + 0x215c684),
-        do_button_cancel_start: std::mem::transmute(text_base + 0x215c778),
-        do_button_cancel_end: std::mem::transmute(text_base + 0x215c784),
-        unk_0x1b8: stub_zero,
-        create_asset_info_reader: stub_zero,
-        get_s_link_property_count: stub_zero,
-        set_s_link_property_def: stub,
-        get_e_link_property_count: stub_zero,
-        set_e_link_property_def: stub,
-        copy_controls: std::mem::transmute(text_base + 0x82a2e0),
-        is_line_feed_by_character_height: stub_false,
-        unk_0x1f8: stub,
-        unk_0x200: stub,
-        update_control: std::mem::transmute(text_base + 0x231dc04),
-        open_start: std::mem::transmute(text_base + 0x24717c),
-        is_open_end: std::mem::transmute(text_base + 0x246b68),
-        open_end: std::mem::transmute(text_base + 0x246b98),
-        close_start: std::mem::transmute(text_base + 0x247370),
-        is_close_end: std::mem::transmute(text_base + 0x246b30),
-        close_end: std::mem::transmute(text_base + 0x246e38),
+        base: BaseScreenVtable {
+            destructor1: mod_menu_destructor1,
+            destructor2: mod_menu_destructor2,
+            check_derived_runtime_type_info: mod_menu_check_rtti,
+            get_runtime_type_info: mod_menu_get_rtti,
+            is_enable_control: mod_menu_is_enable_control,
+            open: std::mem::transmute(text_base + 0x8d9654),
+            close: std::mem::transmute(text_base + 0x7ac858),
+            get_ui_controller: std::mem::transmute(text_base + 0x6911c0),
+            adjust_box_cursor: std::mem::transmute(text_base + 0x215c790),
+            create_box_cursor_node: std::mem::transmute(text_base + 0xa82054),
+            replace_parts_layout_name: std::mem::transmute(text_base + 0x231def8),
+            unk_0x5b: stub,
+            set_animator_state: stub,
+            do_create_letter_anim_control: std::mem::transmute(text_base + 0x215b670),
+            do_create_number_anim_control: std::mem::transmute(text_base + 0x231df34),
+            post_initialize: stub,
+            initialize: std::mem::transmute(text_base + 0x6db5ec),
+            update: std::mem::transmute(text_base + 0x32c788),
+            draw: std::mem::transmute(text_base + 0x231dddc),
+            unk_0x98: stub,
+            unk_0xa0: stub,
+            get_layout_name: std::mem::transmute(text_base + 0x9554e4),
+            get_message_name: std::mem::transmute(text_base + 0x5ef674),
+            get_message_name_2: std::mem::transmute(text_base + 0x6dbff8),
+            is_play_parts_in_out: stub_zero,
+            is_disallow_hit_lower_screen_on_button_hit: stub_one,
+            do_create_layout: std::mem::transmute(text_base + 0xa81ce4),
+            do_create_draw_info_ex: std::mem::transmute(text_base + 0x6dbb84),
+            do_create_button_group: std::mem::transmute(text_base + 0x6dbb3c),
+            do_after_build_layout: mod_menu_do_after_build_layout,
+            do_setup_draw_info: std::mem::transmute(text_base + 0x6ec2b4),
+            do_create_ui_controller: stub_zero,
+            do_create_resource_accessor: std::mem::transmute(text_base + 0x6dbe10),
+            do_create_tag_processor: std::mem::transmute(text_base + 0xa81e90),
+            do_build_layout: std::mem::transmute(text_base + 0x6c9898),
+            do_build_layout_impl_: std::mem::transmute(text_base + 0x6c9980),
+            do_load_resource: std::mem::transmute(text_base + 0xa81d38),
+            do_create_slide_list_control: std::mem::transmute(text_base + 0x80b7ec),
+            do_initialize: std::mem::transmute(text_base + 0x7493ec),
+            do_update: std::mem::transmute(text_base + 0x50520),
+            update_button: std::mem::transmute(text_base + 0x243a70),
+            get_animation_step: std::mem::transmute(text_base + 0x6dbb20),
+            do_draw: std::mem::transmute(text_base + 0x231e1ac),
+            do_open_start: std::mem::transmute(text_base + 0x76477c),
+            do_open_end: std::mem::transmute(text_base + 0x7426e8),
+            do_close_start: std::mem::transmute(text_base + 0x796834),
+            do_close_end: std::mem::transmute(text_base + 0x7a9010),
+            do_button_on_start: std::mem::transmute(text_base + 0x215c648),
+            do_button_on_end: std::mem::transmute(text_base + 0x215c654),
+            do_button_off_start: std::mem::transmute(text_base + 0x215c660),
+            do_button_off_end: std::mem::transmute(text_base + 0x215c66c),
+            do_button_down_start: std::mem::transmute(text_base + 0x215c678),
+            do_button_down_end: std::mem::transmute(text_base + 0x215c684),
+            do_button_cancel_start: std::mem::transmute(text_base + 0x215c778),
+            do_button_cancel_end: std::mem::transmute(text_base + 0x215c784),
+            unk_0x1b8: stub_zero,
+            create_asset_info_reader: stub_zero,
+            get_s_link_property_count: stub_zero,
+            set_s_link_property_def: stub,
+            get_e_link_property_count: stub_zero,
+            set_e_link_property_def: stub,
+            copy_controls: std::mem::transmute(text_base + 0x82a2e0),
+            is_line_feed_by_character_height: stub_false,
+            unk_0x1f8: stub,
+            unk_0x200: stub,
+            update_control: std::mem::transmute(text_base + 0x231dc04),
+            open_start: std::mem::transmute(text_base + 0x24717c),
+            is_open_end: std::mem::transmute(text_base + 0x246b68),
+            open_end: std::mem::transmute(text_base + 0x246b98),
+            close_start: std::mem::transmute(text_base + 0x247370),
+            is_close_end: std::mem::transmute(text_base + 0x246b30),
+            close_end: std::mem::transmute(text_base + 0x246e38),
 
-        is_force_glb_mtx_dirty: stub_false,
-        update_animator: std::mem::transmute(text_base + 0x215a920),
-        register_controller: stub,
-        unregister_controller: stub,
-        setup_pane_after_build: std::mem::transmute(text_base + 0x215a954),
-        do_initialize_layout: std::mem::transmute(text_base + 0x87fedc),
+            is_force_glb_mtx_dirty: stub_false,
+            update_animator: std::mem::transmute(text_base + 0x215a920),
+            register_controller: stub,
+            unregister_controller: stub,
+            setup_pane_after_build: std::mem::transmute(text_base + 0x215a954),
+            do_initialize_layout: std::mem::transmute(text_base + 0x87fedc),
 
-        count_effect_link_pane: std::mem::transmute(text_base + 0x231e8f0),
-        create_effect_link_user: std::mem::transmute(text_base + 0x7e5de8),
-        create_sound_link_2_user: std::mem::transmute(text_base + 0x6dbc34),
+            count_effect_link_pane: std::mem::transmute(text_base + 0x231e8f0),
+            create_effect_link_user: std::mem::transmute(text_base + 0x7e5de8),
+            create_sound_link_2_user: std::mem::transmute(text_base + 0x6dbc34),
 
-        invoke_sound_link_2_event: std::mem::transmute(text_base + 0x4f91e8),
-        invoke_sound_link_2_button_event: std::mem::transmute(text_base + 0x215c5b0),
-        invoke_sound_link_2_anim_play_event: std::mem::transmute(text_base + 0x356c00),
+            invoke_sound_link_2_event: std::mem::transmute(text_base + 0x4f91e8),
+            invoke_sound_link_2_button_event: std::mem::transmute(text_base + 0x215c5b0),
+            invoke_sound_link_2_anim_play_event: std::mem::transmute(text_base + 0x356c00),
 
-        unk_2xa0: std::mem::transmute(text_base + 0x215b9e8),
+            unk_2xa0: std::mem::transmute(text_base + 0x215b9e8),
 
-        unk_2xa8: std::mem::transmute(text_base + 0x215baa4),
-        unk_2xb0: std::mem::transmute(text_base + 0x215baf0),
-        unk_2xb8: std::mem::transmute(text_base + 0x215bb40),
-        unk_2xc0: std::mem::transmute(text_base + 0x1a7afbc),
-        unk_2xc8: std::mem::transmute(text_base + 0x1a7afc4),
+            unk_2xa8: std::mem::transmute(text_base + 0x215baa4),
+            unk_2xb0: std::mem::transmute(text_base + 0x215baf0),
+            unk_2xb8: std::mem::transmute(text_base + 0x215bb40),
+            unk_2xc0: std::mem::transmute(text_base + 0x1a7afbc),
+            unk_2xc8: std::mem::transmute(text_base + 0x1a7afc4),
 
-        unk_2xd0: std::mem::transmute(text_base + 0x4353e0),
-        unk_0x2d8: std::mem::transmute(text_base + 0x395b8c),
-        unk_0x2e0: stub_zero,
+            unk_2xd0: std::mem::transmute(text_base + 0x4353e0),
+            unk_0x2d8: std::mem::transmute(text_base + 0x395b8c),
+            unk_0x2e0: stub_zero,
 
-        unk_0x2e8: std::mem::transmute(text_base + 0x1a7afd4),
-        unk_0x2f0: std::mem::transmute(text_base + 0x1a7afdc),
-        unk_0x2f8: stub_zero,
+            unk_0x2e8: std::mem::transmute(text_base + 0x1a7afd4),
+            unk_0x2f0: std::mem::transmute(text_base + 0x1a7afdc),
+            unk_0x2f8: stub_zero,
 
-        unk_0x300: std::mem::transmute(text_base + 0x7fbac4),
-        handle_input: std::mem::transmute(text_base + 0x215acc4),
-        on_state_change: stub,
+            unk_0x300: std::mem::transmute(text_base + 0x7fbac4),
+            handle_input: std::mem::transmute(text_base + 0x215acc4),
+            on_state_change: stub,
 
-        unk_0x318: std::mem::transmute(text_base + 0x6db704),
+            unk_0x318: std::mem::transmute(text_base + 0x6db704),
 
-        app_finish_open: std::mem::transmute(text_base + 0x742790),
+            app_finish_open: std::mem::transmute(text_base + 0x742790),
 
-        unk_0x328: stub_max,
-        unk_0x330: stub_one,
-        unk_0x338: std::mem::transmute(text_base + 0x4353d8),
-        unk_0x340: stub_zero,
+            unk_0x328: stub_max,
+            unk_0x330: stub_one,
+            unk_0x338: std::mem::transmute(text_base + 0x4353d8),
+            unk_0x340: stub_zero,
 
-        unk_0x348: stub_one,
-        unk_0x350: stub_zero,
-        unk_0x358: stub_zero,
-        unk_0x360: stub_zero,
+            unk_0x348: stub_one,
+            unk_0x350: stub_zero,
+            unk_0x358: stub_zero,
+            unk_0x360: stub_zero,
 
-        app_setup_draw_info: stub_zero,
+            app_setup_draw_info: stub_zero,
 
-        unk_0x370: stub_zero,
-        unk_0x378: std::mem::transmute(text_base + 0x1a7b018),
-        unk_0x380: std::mem::transmute(text_base + 0x1a7b028),
-        unk_0x388: std::mem::transmute(text_base + 0x1a7b030),
-        unk_0x390: std::mem::transmute(text_base + 0x1a7b040),
+            unk_0x370: stub_zero,
+            unk_0x378: std::mem::transmute(text_base + 0x1a7b018),
+            unk_0x380: std::mem::transmute(text_base + 0x1a7b028),
+            unk_0x388: std::mem::transmute(text_base + 0x1a7b030),
+            unk_0x390: std::mem::transmute(text_base + 0x1a7b040),
 
-        app_do_initialize: mod_menu_app_do_initialize,
-        app_open_start: mod_menu_app_open_start,
-        app_open_end: stub,
-        app_close_start: mod_menu_app_close_start,
-        app_close_end: mod_menu_app_close_end,
-        app_do_update: mod_menu_app_do_update,
+            app_do_initialize: mod_menu_app_do_initialize,
+            app_open_start: mod_menu_app_open_start,
+            app_open_end: stub,
+            app_close_start: mod_menu_app_close_start,
+            app_close_end: mod_menu_app_close_end,
+            app_do_update: mod_menu_app_do_update,
 
-        is_deselect_box_cursor_on_close: stub_false,
+            is_deselect_box_cursor_on_close: stub_false,
 
-        unk_0x3d0: stub,
-        unk_0x3d8: stub,
-        unk_0x3e0: std::mem::transmute(text_base + 0x215c4e0),
+            unk_0x3d0: stub,
+            unk_0x3d8: stub,
+            unk_0x3e0: std::mem::transmute(text_base + 0x215c4e0),
 
-        app_button_on_start: mod_menu_button_on_start,
-        app_button_on_end: stub,
+            app_button_on_start: mod_menu_button_on_start,
+            app_button_on_end: stub,
 
-        app_button_off_start: stub,
-        app_button_off_end: stub,
+            app_button_off_start: stub,
+            app_button_off_end: stub,
 
-        app_button_down_start: my_button_click_handler,
-        app_button_down_end: stub,
+            app_button_down_start: my_button_click_handler,
+            app_button_down_end: stub,
 
-        app_button_cancel_start: stub,
-        app_button_cancel_end: stub,
-        unk_0x428: stub,
+            app_button_cancel_start: stub,
+            app_button_cancel_end: stub,
+            unk_0x428: stub,
 
-        unk_0x430: stub,
-        unk_0x438: stub,
-        unk_0x440: stub,
-        unk_0x448: std::mem::transmute(text_base + 0x215c19c),
-        unk_0x450: std::mem::transmute(text_base + 0x215c27c),
-        unk_0x458: stub_zero,
+            unk_0x430: stub,
+            unk_0x438: stub,
+            unk_0x440: stub,
+            unk_0x448: std::mem::transmute(text_base + 0x215c19c),
+            unk_0x450: std::mem::transmute(text_base + 0x215c27c),
+            unk_0x458: stub_zero,
 
-        on_process_command: stub_zero,
-        is_scene_mgr_thing: stub,
-        initialize_scene_mgr_thing: std::mem::transmute(text_base + 0x8cb484),
+            get_state_machine: stub_zero,
+            register_states: stub,
+            change_state: std::mem::transmute(text_base + 0x8cb484),
 
-        unk_0x478: std::mem::transmute(text_base + 0x7647f4),
+            trigger_scene_transition: std::mem::transmute(text_base + 0x7647f4),
 
-        app_open_start_2: std::mem::transmute(text_base + 0x79692c),
+            play_screen_open_audio: std::mem::transmute(text_base + 0x79692c),
+        },
         set_button_state: std::mem::transmute(text_base + 0x215bcec),
 
         unk_0x490: mod_menu_unk_0x490,
@@ -893,7 +710,7 @@ extern "C" fn mod_menu_do_after_build_layout(this: *mut ScreenModMenu) {
             i32,
         ) = std::mem::transmute(text_base + 0x8646b8);
 
-        ((*this.base.base_idisposer.vtable).unk_0x498)(this_ptr);
+        ((*this.base.vtable()).unk_0x498)(this_ptr);
 
         let count = this.navigation_map.count;
         if count != 0 {
@@ -1049,7 +866,7 @@ extern "C" fn mod_menu_app_do_update(this: *mut ScreenModMenu) {
                                 && num_frames <= (loop_anim.base.base.frame + (i_var_8 as f32))
                                 && (button.flags & 1) != 0
                             {
-                                // no idea why i call this really as i skip the
+                                // no idea why i call this really as i skip the introduction manager logic
                                 button.is_clicked();
                             }
                         }
@@ -1127,11 +944,7 @@ extern "C" fn mod_menu_app_do_update(this: *mut ScreenModMenu) {
                                 }
                             }
 
-                            ((*this.base.base_idisposer.vtable).set_button_state)(
-                                this_ptr as u64,
-                                i as i32,
-                                1,
-                            );
+                            ((*this.base.vtable()).set_button_state)(this_ptr as u64, i as i32, 1);
                         }
                     }
                 }
@@ -1152,15 +965,14 @@ extern "C" fn mod_menu_app_do_update(this: *mut ScreenModMenu) {
             && this.is_input_enabled
             && this.transition_state == 0
         {
-            let ui_controller =
-                (((*this.base.base_idisposer.vtable).get_ui_controller)()) as *const u8;
+            let ui_controller = (((*this.base.vtable()).base.get_ui_controller)()) as *const u8;
 
             if !ui_controller.is_null() {
                 let btn_state = *(ui_controller.add(8) as *const u8);
 
                 if (btn_state >> 3) & 1 != 0 {
                     fun_710215ad58(this_ptr);
-                    ((*this.base.base_idisposer.vtable).close)(this_ptr as u64, -1);
+                    (((*this.base.vtable()).base).close)(this_ptr as u64, -1);
                 }
             }
         }
@@ -1270,6 +1082,7 @@ extern "C" fn mod_menu_check_rtti(this: u64, target_type: u64) -> u64 {
         {
             return this;
         }
+
         0
     }
 }
@@ -1316,11 +1129,7 @@ extern "C" fn mod_menu_unk_0x490(this: *mut ScreenModMenu, focus_flags: u32) {
             let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
 
             for i in 0..this.navigation_map.count {
-                ((*this.base.base_idisposer.vtable).set_button_state)(
-                    this_ptr as u64,
-                    i,
-                    focus_flags & 1,
-                );
+                ((*this.base.vtable()).set_button_state)(this_ptr as u64, i, focus_flags & 1);
             }
         }
     }
