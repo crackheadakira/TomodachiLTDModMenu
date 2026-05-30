@@ -311,6 +311,7 @@ pub fn main() {
         crate::mod_menu::capture_screen_heap,
         // crate::patcher::rstb_parse_hook,
     );
+
     fsm_ext::register_menu(
         0x88,
         Some(state_88_enter),

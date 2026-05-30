@@ -1,7 +1,7 @@
 use skyline::nn::ui2d::{ResAnimationBlock, ResAnimationContent};
 use std::ffi::c_void;
 
-use crate::sead::container::ListNode;
+use crate::{eui::LayoutEx, sead::container::ListNode};
 
 #[repr(C)]
 pub struct BinaryBlockHeader {
@@ -97,7 +97,7 @@ pub struct Animator {
     pub flags: u16,
     pub m_loop: u8,
     pub unk_57: u8,
-    pub layout: *const c_void, // LayoutEx
+    pub layout: *mut LayoutEx, // LayoutEx
     pub tag_block: *const ResAnimationTagBlock,
 }
 
