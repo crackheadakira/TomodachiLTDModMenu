@@ -10,13 +10,13 @@ lazy_static! {
 }
 
 type FsmEnterFn = extern "C" fn(u64);
-type FsmExecuteFn = extern "C" fn(u64);
+type FsmUpdateFn = extern "C" fn(u64);
 type FsmExitFn = extern "C" fn(u64);
 
 pub struct CustomMenu {
     pub id: u32,
     pub enter_fn: Option<FsmEnterFn>,
-    pub execute_fn: Option<FsmExecuteFn>,
+    pub update_fn: Option<FsmUpdateFn>,
     pub exit_fn: Option<FsmExitFn>,
 }
 
@@ -32,7 +32,7 @@ pub struct FsmDelegateState {
     pub vtable: u64,
     pub context: u64,
     pub enter_pmf: Pmf,
-    pub execute_pmf: Pmf,
+    pub update_pmf: Pmf,
     pub exit_pmf: Pmf,
 }
 
@@ -80,7 +80,7 @@ unsafe fn install_framework(fsm_base: u64) {
         }
     };
 
-    let make_execute_pmf = |func: Option<FsmExecuteFn>| -> Pmf {
+    let make_update_pmf = |func: Option<FsmUpdateFn>| -> Pmf {
         Pmf {
             ptr: func.map(|f| f as u64).unwrap_or(0),
             adj: 0,
@@ -95,14 +95,14 @@ unsafe fn install_framework(fsm_base: u64) {
         let slot_addr = new_table.add((menu.id as usize) * 0x40) as *mut FsmDelegateState;
 
         let mut enter = make_pmf(menu.enter_fn);
-        let mut execute = make_execute_pmf(menu.execute_fn);
+        let mut update = make_update_pmf(menu.update_fn);
         let mut exit = make_pmf(menu.exit_fn);
 
         let custom_state = FsmDelegateState {
             vtable: vanilla_vtable,
             context: vanilla_context,
             enter_pmf: enter,
-            execute_pmf: execute,
+            update_pmf: update,
             exit_pmf: exit,
         };
 
@@ -122,7 +122,7 @@ pub fn init() {
 pub fn register_menu(
     id: u32,
     enter: Option<FsmEnterFn>,
-    execute: Option<FsmExecuteFn>,
+    update: Option<FsmUpdateFn>,
     exit: Option<FsmExitFn>,
 ) {
     let mut registry = MENU_REGISTRY.write().expect("Failed to lock MENU_REGISTRY");
@@ -134,7 +134,7 @@ pub fn register_menu(
     registry.push(CustomMenu {
         id,
         enter_fn: enter,
-        execute_fn: execute,
+        update_fn: update,
         exit_fn: exit,
     });
 

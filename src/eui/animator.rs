@@ -30,8 +30,42 @@ pub struct TextureInfo {
 }
 
 #[repr(C)]
+pub struct AnimatorVtable {
+    pub get_runtime_type_info: extern "C" fn(),
+    pub dtor_anim_transform_basic: extern "C" fn(),
+    pub dtor_animator: extern "C" fn(),
+    pub update_frame: extern "C" fn(),
+    pub set_enabled: extern "C" fn(),
+    pub animate: extern "C" fn(),
+    pub animate_pane: extern "C" fn(),
+    pub animate_material: extern "C" fn(),
+    pub set_resource_1: extern "C" fn(),
+    pub set_resource_2: extern "C" fn(),
+    pub bind_pane: extern "C" fn(),
+    pub bind_group: extern "C" fn(),
+    pub bind_material: extern "C" fn(),
+    pub force_bind_pane: extern "C" fn(),
+    pub unbind_pane: extern "C" fn(),
+    pub unbind_group: extern "C" fn(),
+    pub unbind_material: extern "C" fn(),
+    pub unbind_all: extern "C" fn(),
+    pub unk_90: extern "C" fn(),
+    pub unk_98: extern "C" fn(),
+    pub animate_pane_impl: extern "C" fn(),
+    pub animate_material_impl: extern "C" fn(),
+    pub animate_ext_user_data_impl: extern "C" fn(),
+    pub play: extern "C" fn(),
+    pub play_auto: extern "C" fn(),
+    pub play_from_current: extern "C" fn(),
+    pub stop: extern "C" fn(),
+    pub stop_current: extern "C" fn(),
+    pub stop_at_min: extern "C" fn(),
+    pub stop_at_max: extern "C" fn(),
+}
+
+#[repr(C)]
 pub struct AnimTransform {
-    pub vtable: *const c_void,
+    pub vtable: *const AnimatorVtable,
     pub list_node: ListNode,
     pub res: *mut ResAnimationBlock,
     pub frame: f32,
@@ -67,7 +101,16 @@ pub struct Animator {
     pub tag_block: *const ResAnimationTagBlock,
 }
 
+impl Animator {
+    pub unsafe fn get_frame_size(&self) -> u16 {
+        let res = &*(self.base.base.res);
+
+        res.num_frames
+    }
+}
+
 const _: () = assert!(core::mem::size_of::<TextureInfo>() == 0x10);
 const _: () = assert!(core::mem::size_of::<AnimTransform>() == 0x28);
 const _: () = assert!(core::mem::size_of::<AnimTransformBasic>() == 0x40);
 const _: () = assert!(core::mem::size_of::<Animator>() == 0x68);
+const _: () = assert!(core::mem::size_of::<AnimatorVtable>() == 0xf0);

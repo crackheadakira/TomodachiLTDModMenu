@@ -1,6 +1,12 @@
 use std::ffi::{c_char, c_void};
 
-use crate::{eui::LayoutEx, sead::container::ListNode};
+use crate::{
+    eui::{screen_manager::BaseScreen, LayoutEx},
+    sead::{
+        container::{ListNode, PtrArray},
+        thread::CriticalSection,
+    },
+};
 
 #[derive(Debug)]
 #[repr(C)]
@@ -30,9 +36,41 @@ pub struct ButtonBase {
     pub pad_39: u8,
     pub process_state: u8,
     pub unk_3b: u8,
-    pub button_index: u32,
+    pub button_index: u8,
+    pub unk_3d: u8,
+    pub unk_3e: u8,
+    pub unk_3f: u8,
     pub flags: u32,
     pub slide_index: i32,
+}
+
+impl ButtonBase {
+    pub fn is_clicked(&self) -> bool {
+        if (self.state & 0xfe) != 4 {
+            let mut remaining = self.unk_3e as usize;
+
+            if remaining == 0 {
+                return false;
+            }
+
+            if self.process_state != 2 {
+                let mut ptr = &self.unk_3b as *const u8;
+                loop {
+                    remaining -= 1;
+                    if remaining == 0 {
+                        return false;
+                    }
+                    unsafe {
+                        if *ptr == 2 {
+                            return remaining != 0;
+                        }
+                        ptr = ptr.add(1);
+                    }
+                }
+            }
+        }
+        true
+    }
 }
 
 #[repr(C)]
@@ -95,6 +133,61 @@ pub struct ControlBaseVtable {
     pub build_state_anim: extern "C" fn(u64, u64, u64),
 }
 
+#[repr(C)]
+pub struct ButtonHitCallback {
+    pub vtable: *const c_void,
+    pub next_button_hit_callback: *mut ButtonHitCallback,
+    pub button_hit_handler: *mut ButtonHitHandler,
+    pub screen_index: i32,
+    pub unk_1c: u8,
+    pub processing: u8,
+    pub is_enabled: bool,
+    pub unk_1f: u8,
+}
+
+#[repr(C)]
+pub struct ButtonHitHandler {
+    pub processing_callbacks: PtrArray<ButtonHitCallback>,
+    pub canceled_callbacks: PtrArray<ButtonHitCallback>,
+    pub reserved_callbacks: PtrArray<ButtonHitCallback>,
+    pub root_callback: *mut ButtonHitCallback,
+    pub screen: *mut BaseScreen,
+    pub cs: *mut CriticalSection,
+    pub unk_48: i32,
+    pub pad_4c: u32,
+}
+
+#[repr(C)]
+pub struct ButtonGroup {
+    pub vtable: *const c_void,
+    pub active_list: ListNode,
+    pub update_list: ListNode,
+    pub current_button: *mut ButtonBase,
+    pub unk_30: *mut ButtonBase,
+    pub unk_38: *mut ButtonBase,
+    pub unk_40: i32,
+    pub node_id: u32,
+}
+
+impl ButtonGroup {
+    pub unsafe fn find_button_by_id(&self, id: i32) -> Option<&mut ButtonBase> {
+        let sentinel = &self.active_list as *const ListNode as *mut ListNode;
+        let mut node = (*sentinel).next;
+
+        while node != sentinel {
+            let button_index = *((node as *const u8).add(0x3c) as *const i32);
+            if button_index == id {
+                return Some(&mut *((node as *mut u8).sub(0x8) as *mut ButtonBase));
+            }
+            node = (*node).next;
+        }
+        None
+    }
+}
+
+const _: () = assert!(core::mem::size_of::<ButtonGroup>() == 0x48);
 const _: () = assert!(core::mem::size_of::<ControlBase>() == 0x28);
 const _: () = assert!(core::mem::size_of::<ButtonBase>() == 0x48);
 const _: () = assert!(core::mem::size_of::<ControlBaseVtable>() == 0x150);
+const _: () = assert!(core::mem::size_of::<ButtonHitCallback>() == 0x20);
+const _: () = assert!(core::mem::size_of::<ButtonHitHandler>() == 0x50);

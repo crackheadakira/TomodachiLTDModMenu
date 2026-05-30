@@ -12,9 +12,10 @@ use std::{
 };
 
 use crate::{
+    eui::screen_manager::BaseScreen,
     eui_controller::EuiController,
     fsm_ext::GAMEPLAY_CONTROLLER,
-    mod_menu::{MOD_MENU_HASH, MOD_MENU_OBJ_PTR, MOD_MENU_TYPE_INFO_PTR},
+    mod_menu::{ModMenuVTable, MOD_MENU_HASH, MOD_MENU_OBJ_PTR, MOD_MENU_TYPE_INFO_PTR},
     ui_framework::ButtonState,
 };
 
@@ -83,34 +84,31 @@ pub fn test_spawn_mod_menu(_btn: &mut ButtonState, _ctrl: EuiController) {
 }
 
 extern "C" fn state_88_enter(context: u64) {
+    println!("custom state enter");
     unsafe {
         let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
-
-        let scene_mgr_pp = (text_base + 0x32cd3f8) as *const *const u64;
-        let scene_mgr = **scene_mgr_pp;
-
-        let find_by_hash: extern "C" fn(u64, u32) -> u64 =
+        let find_by_hash: extern "C" fn(u64, u32) -> *mut BaseScreen<ModMenuVTable> =
             std::mem::transmute(text_base + 0x7c5b74);
-        let wrapper = find_by_hash(scene_mgr, MOD_MENU_HASH);
 
-        if wrapper != 0 {
-            let vtable = *(wrapper as *const *const u64);
-            let get_screen: extern "C" fn(u64, u64) -> u64 = std::mem::transmute(*vtable.add(2));
+        let scene_mgr = **((text_base + 0x32cd3f8) as *const *const u64);
 
-            let screen = get_screen(wrapper, &raw const MOD_MENU_TYPE_INFO_PTR as u64);
+        let mod_menu = find_by_hash(scene_mgr, MOD_MENU_HASH);
+        let island_menu = find_by_hash(scene_mgr, 0x51861076);
 
-            if screen != 0 {
-                let open_fn: extern "C" fn(u64, i32) = std::mem::transmute(text_base + 0x8d9654);
-                open_fn(screen, 1);
-            }
+        if !island_menu.is_null() {
+            // let's just assume for now that it did get the proper one so we skip RTTI guard
+            ((*(*island_menu).base_idisposer.vtable).close)(island_menu as *const _ as u64, -1);
+        }
+
+        if !mod_menu.is_null() {
+            ((*(*mod_menu).base_idisposer.vtable).open)(mod_menu as *const _ as u64, 1);
         }
     }
 }
 
-extern "C" fn state_88_execute(context: u64) {
+extern "C" fn state_88_update(context: u64) {
     unsafe {
         let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
-
         let manager_ptr_ptr = (context + 0xa8) as *const *const u64;
 
         if !manager_ptr_ptr.is_null() {
@@ -121,16 +119,46 @@ extern "C" fn state_88_execute(context: u64) {
 
                 ui_update_fn(manager as u64);
 
-                let ready_flag_ptr = (manager as *const u8).add(0xc90);
-                if *ready_flag_ptr == 0 {
-                    return;
+                let find_by_hash: extern "C" fn(u64, u32) -> *mut BaseScreen<ModMenuVTable> =
+                    std::mem::transmute(text_base + 0x7c5b74);
+                let scene_mgr = **((text_base + 0x32cd3f8) as *const *const u64);
+                let mod_menu = find_by_hash(scene_mgr, MOD_MENU_HASH);
+                let check_validator: extern "C" fn(*mut BaseScreen<_>) -> u32 =
+                    std::mem::transmute(text_base + 0x395b8c);
+
+                if (check_validator(mod_menu) & 1) != 0 {
+                    let exit_wrapper_fn: extern "C" fn(u64, u64, u8) =
+                        std::mem::transmute(text_base + 0x8aec48);
+
+                    let zero_vec_ptr = text_base + 0x32cb150;
+                    exit_wrapper_fn(context, zero_vec_ptr, 1);
                 }
             }
         }
     }
 }
 
-extern "C" fn state_88_exit(context: u64) {}
+extern "C" fn state_88_exit(context: u64) {
+    println!("custom state exit");
+    unsafe {
+        let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
+        let find_by_hash: extern "C" fn(u64, u32) -> *mut BaseScreen<ModMenuVTable> =
+            std::mem::transmute(text_base + 0x7c5b74);
+
+        let scene_mgr = **((text_base + 0x32cd3f8) as *const *const u64);
+
+        let mod_menu = find_by_hash(scene_mgr, MOD_MENU_HASH);
+        let island_menu = find_by_hash(scene_mgr, 0x51861076);
+
+        if !mod_menu.is_null() {
+            ((*(*mod_menu).base_idisposer.vtable).close)(mod_menu as u64, -1);
+        }
+
+        if !island_menu.is_null() {
+            ((*(*island_menu).base_idisposer.vtable).open)(island_menu as u64, 1);
+        }
+    }
+}
 
 pub fn give_money(money_count: u32) {
     unsafe {
@@ -283,7 +311,12 @@ pub fn main() {
         crate::mod_menu::capture_screen_heap,
         // crate::patcher::rstb_parse_hook,
     );
-    fsm_ext::register_menu(0x88, Some(state_88_enter), Some(state_88_execute), None);
+    fsm_ext::register_menu(
+        0x88,
+        Some(state_88_enter),
+        Some(state_88_update),
+        Some(state_88_exit),
+    );
 
     install_buttons! {
         "Island_Menu_00", "L_ResidentList_00" => test_spawn_mod_menu,

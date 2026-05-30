@@ -5,7 +5,8 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 use skyline::nn::ui2d::Layout;
 
-use crate::eui::ButtonBase;
+use crate::eui::Animator;
+use crate::eui::{screen_manager::BaseScreen, ButtonBase, ButtonGroup, LayoutEx};
 use crate::sead::{
     container::{ListNode, OffsetList},
     heap::{Heap, IDisposer},
@@ -713,30 +714,22 @@ extern "C" fn mod_menu_app_do_initialize(this: *mut ScreenModMenu) {
 
     unsafe {
         let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
-        let layout = this.base.layout_panes as u64;
 
         this.is_initialized = true;
 
         this.is_button_enabled = [true; 8];
 
-        let find_anim: extern "C" fn(u64, *const u8, i32) -> u64 =
+        let layout_ex_find_animator_by_name: extern "C" fn(u64, *const u8, i32) -> *mut Animator =
             std::mem::transmute(text_base + 0x48a84);
 
-        let in_bg = find_anim(layout, b"InFromBG\0".as_ptr(), 0);
-        this.anim_in_from_bg = in_bg as *const c_void;
+        let layout = this.base.layout as u64;
+        this.anim_in_from_bg = layout_ex_find_animator_by_name(layout, b"InFromBG\0".as_ptr(), 0);
 
-        let out_bg = find_anim(layout, b"OutToBG\0".as_ptr(), 0);
-        this.anim_out_to_bg = out_bg as *const c_void;
+        this.anim_out_to_bg = layout_ex_find_animator_by_name(layout, b"OutToBG\0".as_ptr(), 0);
 
-        let short_in = find_anim(layout, b"ShortIn\0".as_ptr(), 0);
-        this.anim_short_in = short_in as *const c_void;
+        this.anim_short_in = layout_ex_find_animator_by_name(layout, b"ShortIn\0".as_ptr(), 0);
 
-        let in_after = find_anim(layout, b"InAfter\0".as_ptr(), 0);
-
-        println!(
-            "[Mod] All animations bound. In: {:#X}, Out: {:#X}, Short: {:#X}",
-            in_bg, out_bg, short_in
-        );
+        let in_after = layout_ex_find_animator_by_name(layout, b"InAfter\0".as_ptr(), 0);
     }
 }
 
@@ -749,7 +742,6 @@ extern "C" fn mod_menu_app_open_start(this: *mut ScreenModMenu) {
         let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
 
         let mut layout_msg_buf = [0u64; 2];
-        let scene_manager = (this.base.scene_manager) as *mut u64 as u64;
 
         let load_text_from_mal: extern "C" fn(
             u64,
@@ -763,9 +755,8 @@ extern "C" fn mod_menu_app_open_start(this: *mut ScreenModMenu) {
         let text_pane = b"T_Text_00\0".as_ptr();
         let text_id = b"L_ModBtn_03\0".as_ptr();
 
-        let button_6 = get_button(this.base.layout_manager, 6);
-
-        if let Some(btn) = button_6 {
+        let btn_group = &*this.base.button_group;
+        if let Some(btn) = btn_group.find_button_by_id(6) {
             load_text_from_mal(
                 this_ptr as u64,
                 0.0,
@@ -780,7 +771,7 @@ extern "C" fn mod_menu_app_open_start(this: *mut ScreenModMenu) {
 
         // inlined FUN_71020a604c
         for i in 0..9i32 {
-            if let Some(button) = get_button(this.base.layout_manager, i) {
+            if let Some(button) = btn_group.find_button_by_id(i) {
                 if let Some(layout) = button.base.get_layout() {
                     if let Some(loop_anim) = layout.get_loop_animator() {
                         loop_anim.base.base.frame =
@@ -815,7 +806,7 @@ extern "C" fn mod_menu_app_open_start(this: *mut ScreenModMenu) {
         let priorities = [2, 1, 0, 6, 5, 4, 7, 3, 8];
         let mut final_id = -1i32;
         for &id in &priorities {
-            if let Some(button) = get_button(this.base.layout_manager, id) {
+            if let Some(button) = btn_group.find_button_by_id(id) {
                 if (button.flags >> 2 & 1) != 0 {
                     final_id = id;
                     break;
@@ -831,33 +822,6 @@ extern "C" fn mod_menu_app_open_start(this: *mut ScreenModMenu) {
     }
 }
 
-unsafe fn get_button<'a>(
-    layout_manager: *mut LayoutManager,
-    target_id: i32,
-) -> Option<&'a mut ButtonBase> {
-    if layout_manager.is_null() {
-        return None;
-    }
-
-    let layout_mgr_u8 = layout_manager as *mut u8;
-
-    let mut current_node = *(layout_mgr_u8.add(0x10) as *const *mut u8);
-    let tail_sentinel = layout_mgr_u8.add(0x8);
-
-    while !current_node.is_null() && current_node != tail_sentinel {
-        let current_id = *(current_node.add(0x3c) as *const i32);
-
-        if current_id == target_id {
-            let btn_ptr = current_node.sub(8) as *mut ButtonBase;
-            return btn_ptr.as_mut();
-        }
-
-        current_node = *(current_node.add(0x8) as *const *mut u8);
-    }
-
-    None
-}
-
 extern "C" fn mod_menu_app_close_start(this: *mut ScreenModMenu) {
     println!("[Mod] appCloseStart");
     let this_ptr = this;
@@ -866,20 +830,13 @@ extern "C" fn mod_menu_app_close_start(this: *mut ScreenModMenu) {
     unsafe {
         let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
 
-        let find_anim: extern "C" fn(u64, *const u8) -> u64 =
+        let fun_71008b18a4: extern "C" fn(u64, *const u8) -> *const Animator =
             std::mem::transmute(text_base + 0x8b18a4);
 
-        let layout_panes = this.base.layout_panes as u64;
-        let anim = find_anim(layout_panes, b"InAfter\0".as_ptr());
+        let anim = &*fun_71008b18a4(this.base.layout as u64, b"InAfter\0".as_ptr());
 
-        if anim != 0 {
-            let speed = *((anim + 0x50) as *const f32);
-
-            if speed != 0.0 {
-                let vtable = *(anim as *const *const u64);
-                let play: extern "C" fn(u64) = std::mem::transmute(*vtable.add(0xd8 / 8));
-                play(anim);
-            }
+        if anim.target_frame != 0.0 {
+            ((*anim.base.base.vtable).stop_current)();
         }
     }
 }
@@ -1050,7 +1007,7 @@ extern "C" fn mod_menu_app_do_update(this: *mut ScreenModMenu) {
 
         let fun_710231d85c: extern "C" fn(*mut ScreenModMenu) -> bool =
             std::mem::transmute(text_base + 0x231d85c);
-        let fun_710230b308: extern "C" fn(u64) -> u32 = std::mem::transmute(text_base + 0x230b308);
+        let fun_710230b308: extern "C" fn(u64) -> bool = std::mem::transmute(text_base + 0x230b308);
         let get_ui_controller: extern "C" fn() -> *const u8 =
             std::mem::transmute(text_base + 0x6911c0);
         let fun_710215ad58: extern "C" fn(*mut ScreenModMenu) =
@@ -1068,9 +1025,10 @@ extern "C" fn mod_menu_app_do_update(this: *mut ScreenModMenu) {
         };
 
         this.anim_frame_counter += i_var_8;
+        let btn_group = &*this.base.button_group;
 
         for i in 0..9usize {
-            if let Some(button) = get_button(this.base.layout_manager, i as i32) {
+            if let Some(button) = btn_group.find_button_by_id(i as i32) {
                 if let Some(layout) = button.base.get_layout() {
                     if let Some(loop_anim) = layout.get_loop_animator() {
                         let bit_check = (0x6f >> (i & 0x3f)) & 1;
@@ -1091,7 +1049,8 @@ extern "C" fn mod_menu_app_do_update(this: *mut ScreenModMenu) {
                                 && num_frames <= (loop_anim.base.base.frame + (i_var_8 as f32))
                                 && (button.flags & 1) != 0
                             {
-                                is_button_clicked(button as *mut ButtonBase);
+                                // no idea why i call this really as i skip the
+                                button.is_clicked();
                             }
                         }
                     }
@@ -1099,7 +1058,7 @@ extern "C" fn mod_menu_app_do_update(this: *mut ScreenModMenu) {
             }
         }
 
-        if this.pending_action_id >= 0 && (this.base.unk_11e == 2 && this.base.close_intent > -1) {
+        if this.pending_action_id >= 0 && this.base.is_visible() {
             let timer = this.action_timer;
 
             let dt_val = *((g_system_ptr as *const u8).add(0x10) as *const i32);
@@ -1139,7 +1098,7 @@ extern "C" fn mod_menu_app_do_update(this: *mut ScreenModMenu) {
             let slot = &mut **this.navigation_map.button_map.add(i);
 
             if slot.neighbor >= 0 {
-                if let Some(button) = get_button(this.base.layout_manager, i as i32) {
+                if let Some(button) = btn_group.find_button_by_id(i as i32) {
                     let u_var_9 = fun_71008cb6bc(this_ptr as u64, slot.neighbor);
 
                     if (u_var_9 & 1) != 0 {
@@ -1160,7 +1119,7 @@ extern "C" fn mod_menu_app_do_update(this: *mut ScreenModMenu) {
 
                         if (u_var_9_alt & 1) != 0 {
                             for j in 0..=8 {
-                                if let Some(sub_button) = get_button(this.base.layout_manager, j) {
+                                if let Some(sub_button) = btn_group.find_button_by_id(j) {
                                     ((*sub_button.base.vtable).set_active)(
                                         button as *mut ButtonBase as u64,
                                         1,
@@ -1185,12 +1144,11 @@ extern "C" fn mod_menu_app_do_update(this: *mut ScreenModMenu) {
         }
 
         this.is_input_enabled = b_var_5;
-        input_free = this.base.unk_11e == 2 && this.base.close_intent > -1;
 
         // closes when X is clicked, as that is the button that it was spawned with
-        if input_free
+        if this.base.is_visible()
             && fun_710231d85c(this_ptr)
-            && (fun_710230b308(this.base.layout_manager as u64) & 1) == 0
+            && !fun_710230b308(this.base.button_group as u64)
             && this.is_input_enabled
             && this.transition_state == 0
         {
@@ -1249,8 +1207,6 @@ extern "C" fn mod_menu_app_do_update(this: *mut ScreenModMenu) {
                 this.unk_49c = day;
             }
         }
-
-        let is_ready = this.base.unk_11e == 2 && this.base.close_intent > -1;
 
         /*if is_ready && !fun_710231d85c(this_ptr) {
             if this.is_button_enabled[5] {
@@ -1452,10 +1408,10 @@ extern "C" fn mod_menu_unk_0x498(this: *mut ScreenModMenu) {
                 this.navigation_map.count += 1;
             }
 
-            let layout_manager = &mut *this.base.layout_manager;
+            let button_group = &mut *this.base.button_group;
 
-            let sentinel_ptr = core::ptr::addr_of!(layout_manager.start_end) as *mut ListNode;
-            let mut current_ptr = layout_manager.start_end.next;
+            let sentinel_ptr = core::ptr::addr_of!(button_group.active_list) as *mut ListNode;
+            let mut current_ptr = button_group.active_list.next;
 
             if current_ptr != sentinel_ptr && !current_ptr.is_null() {
                 'search: loop {
@@ -1525,57 +1481,6 @@ pub struct SomeKindOfListMap {
     pub objects: [*mut MenuButtonMap; 12],
 }
 
-#[repr(C, packed)]
-pub struct BaseScreen<V> {
-    pub base_idisposer: IDisposer<V>,
-    pub scene_manager: *mut c_void,
-    pub layout_panes: *mut c_void,
-    pub layout_manager: *mut LayoutManager,
-    pub render_node: ListNode,
-    pub update_node: ListNode,
-    pub pad_58: [u8; 24],
-    pub event_node: ListNode,
-    pub child_list_1: OffsetList<c_void>,
-    pub node_4: ListNode,
-    pub unk_a8: u32,
-    pub screen_id: u32,
-    pub node_5: ListNode,
-    pub unk_c0: u64,
-    pub child_list_2: OffsetList<c_void>,
-    pub parent_heap: *const c_void,
-    pub unk_e8: i32,
-    pub pad_ec: u32,
-    pub ui_allocator: *const c_void,
-    pub currently_focused_node: *const c_void,
-    pub pad_100: [u8; 24],
-    pub camera_fov: f32,
-    pub input_mode: u8,
-    pub close_intent: i8,
-    pub unk_11e: u8,
-    pub unk_11f: u8,
-    pub unk_120: u8,
-    pub unk_state_2: u16,
-    pub is_visible: bool,
-    pub input_flags: u32,
-    pub secondary_vtable: *const c_void,
-    pub delegate_1: [u8; 32],
-    pub unk_150: u64,
-
-    pub fixed_pool_1: [u8; 96],
-    pub pool_buffer_1: *const c_void,
-    pub unk_1c0: [u8; 56],
-
-    pub fixed_pool_2: [u8; 96],
-    pub pool_buffer_2: *const c_void,
-    pub unk_260: [u8; 56],
-    pub scale_enabled: bool,
-    pub pad_299: [u8; 3],
-    pub base_scale: f32,
-    pub screen_lock: CriticalSection,
-
-    pub pad_2de: [u8; 104],
-}
-
 #[repr(C)]
 pub struct ScreenModMenu {
     pub base: BaseScreen<ModMenuVTable>,
@@ -1596,9 +1501,9 @@ pub struct ScreenModMenu {
     pub unk_4a8: u32,
     pub pad_4a9: [u8; 2],
 
-    pub anim_in_from_bg: *const c_void,
-    pub anim_out_to_bg: *const c_void,
-    pub anim_short_in: *const c_void,
+    pub anim_in_from_bg: *mut Animator,
+    pub anim_out_to_bg: *mut Animator,
+    pub anim_short_in: *mut Animator,
 
     pub unk_4c8: u8,
     pub has_tutorial: bool,
@@ -1607,5 +1512,4 @@ pub struct ScreenModMenu {
     pub anim_frame_counter: i32,
 }
 
-const _: () = assert!(core::mem::size_of::<BaseScreen<c_void>>() == 0x348);
 const _: () = assert!(core::mem::size_of::<ScreenModMenu>() == 0x4D0);
