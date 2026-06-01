@@ -34,7 +34,6 @@ impl<'a, T> Iterator for TListIterator<'a, T> {
     fn next(&mut self) -> Option<Self::Item> {
         let sentinel_ptr = ptr::addr_of!(self.list.start_end) as *mut ListNode;
 
-        // Compare current address against the list's own sentinel address
         if self.current == sentinel_ptr {
             None
         } else {

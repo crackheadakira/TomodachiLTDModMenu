@@ -6,8 +6,8 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use skyline::nn::ui2d::Layout;
 
 use crate::eui::screen_manager::BaseScreenVtable;
-use crate::eui::Animator;
 use crate::eui::{screen_manager::BaseScreen, ButtonBase, ButtonGroup, LayoutEx};
+use crate::eui::{Animator, DrawState};
 use crate::sead::{
     container::{ListNode, OffsetList},
     heap::{Heap, IDisposer},
@@ -431,7 +431,7 @@ pub unsafe fn initialize_vtable(text_base: u64) {
 
             invoke_sound_link_2_event: std::mem::transmute(text_base + 0x4f91e8),
             invoke_sound_link_2_button_event: std::mem::transmute(text_base + 0x215c5b0),
-            invoke_sound_link_2_anim_play_event: std::mem::transmute(text_base + 0x356c00),
+            invoke_sound_link_2_anim_play_event: std::mem::transmute(text_base + 0x357320),
 
             unk_2xa0: std::mem::transmute(text_base + 0x215b9e8),
 
@@ -589,8 +589,7 @@ extern "C" fn mod_menu_app_open_start(this: *mut ScreenModMenu) {
             if let Some(button) = btn_group.find_button_by_id(i) {
                 if let Some(layout) = button.base.get_layout() {
                     if let Some(loop_anim) = layout.get_loop_animator() {
-                        loop_anim.base.base.frame =
-                            ((*loop_anim.base.base.res).num_frames as f32) * 0.5;
+                        loop_anim.base.base.frame = (loop_anim.get_frame_size() as f32) * 0.5;
                     }
                 }
             }
@@ -963,14 +962,14 @@ extern "C" fn mod_menu_app_do_update(this: *mut ScreenModMenu) {
             && this.is_input_enabled
             && this.transition_state == 0
         {
-            let ui_controller = (*this).base.get_ui_controller() as *const u8;
+            let ui_controller = this.base.get_ui_controller() as *const u8;
 
             if !ui_controller.is_null() {
-                let btn_state = *(ui_controller.add(8) as *const u8);
+                let btn_state = *ui_controller.add(8);
 
                 if (btn_state >> 3) & 1 != 0 {
                     fun_710215ad58(this_ptr);
-                    (*this).base.close(-1);
+                    this.base.close(DrawState::Closing);
                 }
             }
         }
@@ -1146,42 +1145,42 @@ static ENTRIES: [MenuButtonMap; 9] = [
     MenuButtonMap {
         name: "L_ModBtn_02\0".as_ptr(),
         id: 0,
-        neighbor: -1,
+        neighbor: 6,
     },
     MenuButtonMap {
         name: "L_ModBtn_01\0".as_ptr(),
         id: 1,
-        neighbor: -1,
+        neighbor: 1,
     },
     MenuButtonMap {
         name: "L_ModBtn_00\0".as_ptr(),
         id: 2,
-        neighbor: -1,
+        neighbor: 2,
     },
     MenuButtonMap {
         name: "L_ModBtn_07\0".as_ptr(),
         id: 3,
-        neighbor: -1,
+        neighbor: 9,
     },
     MenuButtonMap {
         name: "L_ModBtn_05\0".as_ptr(),
         id: 4,
-        neighbor: -1,
+        neighbor: 8,
     },
     MenuButtonMap {
         name: "L_ModBtn_04\0".as_ptr(),
         id: 5,
-        neighbor: -1,
+        neighbor: 5,
     },
     MenuButtonMap {
         name: "L_ModBtn_03\0".as_ptr(),
         id: 6,
-        neighbor: -1,
+        neighbor: 6,
     },
     MenuButtonMap {
         name: "L_ModBtn_06\0".as_ptr(),
         id: 7,
-        neighbor: -1,
+        neighbor: -4,
     },
     MenuButtonMap {
         name: "L_ModBtn_08\0".as_ptr(),
@@ -1197,7 +1196,7 @@ extern "C" fn mod_menu_unk_0x498(this: *mut ScreenModMenu) {
     unsafe {
         let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
 
-        for i in 0..9 {
+        for (i, entry) in ENTRIES.iter().enumerate() {
             if this.navigation_map.count < this.navigation_map.capacity {
                 let slot = this.navigation_map.free_list_head;
 
@@ -1205,9 +1204,9 @@ extern "C" fn mod_menu_unk_0x498(this: *mut ScreenModMenu) {
                     this.navigation_map.free_list_head = (*slot).name as *mut MenuButtonMap;
                 }
 
-                (*slot).name = ENTRIES[i].name;
-                (*slot).id = ENTRIES[i].id;
-                (*slot).neighbor = ENTRIES[i].neighbor;
+                (*slot).name = entry.name;
+                (*slot).id = entry.id;
+                (*slot).neighbor = entry.neighbor;
 
                 let idx = this.navigation_map.count as usize;
                 *this.navigation_map.button_map.add(idx) = slot;
@@ -1227,7 +1226,7 @@ extern "C" fn mod_menu_unk_0x498(this: *mut ScreenModMenu) {
                     if !pane_name_ptr.is_null() {
                         let mut char_idx = 0;
                         loop {
-                            let expected_char = *ENTRIES[i].name.add(char_idx);
+                            let expected_char = *entry.name.add(char_idx);
                             let actual_char = *pane_name_ptr.add(char_idx);
 
                             if expected_char != actual_char {

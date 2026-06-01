@@ -10,8 +10,10 @@ use std::{
     sync::atomic::{AtomicBool, AtomicU64, Ordering},
 };
 
+use skyline::hooks::InlineCtx;
+
 use crate::{
-    eui::screen_manager::BaseScreen,
+    eui::{screen_manager::BaseScreen, DrawState},
     eui_controller::EuiController,
     fsm_ext::GAMEPLAY_CONTROLLER,
     mod_menu::{ModMenuVTable, MOD_MENU_HASH},
@@ -96,11 +98,11 @@ extern "C" fn state_88_enter(context: u64) {
 
         if !island_menu.is_null() {
             // let's just assume for now that it did get the proper one so we skip RTTI guard
-            (*island_menu).close(-1);
+            (*island_menu).close(DrawState::Closing);
         }
 
         if !mod_menu.is_null() {
-            (*mod_menu).open(1);
+            (*mod_menu).open(DrawState::Opening);
         }
     }
 }
@@ -150,11 +152,11 @@ extern "C" fn state_88_exit(context: u64) {
         let island_menu = find_by_hash(scene_mgr, 0x51861076);
 
         if !mod_menu.is_null() {
-            (*mod_menu).close(-1);
+            (*mod_menu).close(DrawState::Closing);
         }
 
         if !island_menu.is_null() {
-            (*island_menu).open(1);
+            (*island_menu).open(DrawState::Opening);
         }
     }
 }
@@ -216,7 +218,7 @@ fn build_scene_controller(manager: u64, heap: u64, screen_id: u32, unknown: u64)
 pub fn main() {
     fsm_ext::init();
 
-    skyline::install_hooks!(build_scene_controller, crate::mod_menu::capture_screen_heap,);
+    skyline::install_hooks!(build_scene_controller, crate::mod_menu::capture_screen_heap);
 
     fsm_ext::register_menu(
         0x88,

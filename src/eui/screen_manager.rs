@@ -363,12 +363,12 @@ impl<V> BaseScreen<V> {
         unsafe { &*(self.vtable as *const BaseScreenVtable<u64>) }
     }
 
-    pub fn close(&self, arg: i32) -> u64 {
-        (self.vtable().close)(self.as_ptr(), arg)
+    pub fn close(&self, target_state: DrawState) -> u64 {
+        (self.vtable().close)(self.as_ptr(), target_state as i32)
     }
 
-    pub fn open(&self, arg: i32) -> u64 {
-        (self.vtable().open)(self.as_ptr(), arg)
+    pub fn open(&self, target_state: DrawState) -> u64 {
+        (self.vtable().open)(self.as_ptr(), target_state as i32)
     }
 
     pub fn get_ui_controller(&self) -> u64 {
