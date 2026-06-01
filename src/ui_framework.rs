@@ -1,9 +1,4 @@
-use lazy_static::lazy_static;
-use std::{
-    collections::HashMap,
-    ffi::{c_char, CStr},
-    sync::RwLock,
-};
+use std::ffi::{c_char, CStr};
 
 #[derive(Debug)]
 #[repr(C)]
@@ -79,14 +74,13 @@ macro_rules! install_buttons {
 
         #[skyline::hook(offset = 0x230a590, inline)]
         fn __custom_ui_inline_hook(ctx: &mut skyline::hooks::InlineCtx) {
-            unsafe {
                 let btn_ptr = ctx.registers[19].x() as *mut $crate::ui_framework::ButtonState;
 
-                let btn = &mut *btn_ptr;
                 let context_ptr = ctx.registers[20].x();
+                let btn = unsafe { &mut *btn_ptr };
 
                 if btn.click_state == 2 && btn.state_flags == 4 {
-                    if let Some((bflyt, pane, controller)) = $crate::ui_framework::get_button_identity(btn, context_ptr) {
+                    if let Some((bflyt, pane, controller)) = unsafe { $crate::ui_framework::get_button_identity(btn, context_ptr) } {
                         println!("[Scanner] btn: {btn_ptr:p} ctrl: {controller:#2X}, \"{bflyt}\", \"{pane}\"");
 
                         $(
@@ -95,7 +89,6 @@ macro_rules! install_buttons {
                                 $action(btn, $crate::eui_controller::EuiController::new(controller));
                             }
                         )*
-                    }
                 }
             }
         }

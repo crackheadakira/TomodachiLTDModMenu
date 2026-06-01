@@ -39,7 +39,7 @@ impl ListNode {
 
 impl PartialEq for ListNode {
     fn eq(&self, other: &Self) -> bool {
-        (self as *const ListNode) == (other as *const ListNode)
+        std::ptr::eq(self, other)
     }
 }
 

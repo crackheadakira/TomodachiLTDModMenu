@@ -20,3 +20,6 @@ panic = "unwind"
 [profile.release]
 panic = "abort"
 lto = true
+
+[lints.clippy]
+missing_transmute_annotations = "allow"

@@ -209,7 +209,7 @@ fn build_scene_controller(manager: u64, heap: u64, screen_id: u32, unknown: u64)
         let lr_offset = lr - text_base;
 
         println!("[BuildSceneController] SceneManager: {manager:#X}, Heap: {heap:#X}, Screen ID: {screen_id}, Unknown: {unknown:#X}, called by {lr_offset:#X}");
-    }
+    };
 
     call_original!(manager, heap, screen_id, unknown)
 }

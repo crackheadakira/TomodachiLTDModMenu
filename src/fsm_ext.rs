@@ -94,9 +94,9 @@ unsafe fn install_framework(fsm_base: u64) {
 
         let slot_addr = new_table.add((menu.id as usize) * 0x40) as *mut FsmDelegateState;
 
-        let mut enter = make_pmf(menu.enter_fn);
-        let mut update = make_update_pmf(menu.update_fn);
-        let mut exit = make_pmf(menu.exit_fn);
+        let enter = make_pmf(menu.enter_fn);
+        let update = make_update_pmf(menu.update_fn);
+        let exit = make_pmf(menu.exit_fn);
 
         let custom_state = FsmDelegateState {
             vtable: vanilla_vtable,
