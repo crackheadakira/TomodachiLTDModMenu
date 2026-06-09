@@ -16,25 +16,18 @@ pub struct PlayerManager {
     pub last_player_birthday_time: SaveFlag<i64>,
     pub name: SaveFlag<WFixedSafeString32>,
     pub how_to_call_name: SaveFlag<WFixedSafeString64>,
-    // TODO: enum
-    pub name_region_language_id: SaveFlag<u32>,
+    pub name_region_language_id: SaveFlag<RegionLanguageID>,
     pub island_name: SaveFlag<WFixedSafeString32>,
     pub how_to_call_island_name: SaveFlag<WFixedSafeString64>,
-    // TODO: enum
-    pub island_name_region_language_id: SaveFlag<u32>,
+    pub island_name_region_language_id: SaveFlag<RegionLanguageID>,
     pub clock_snapshot: SaveFlag<ClockSnapshot>,
-    // TODO: enum
-    pub last_region_language_id: SaveFlag<u32>,
+    pub last_region_language_id: SaveFlag<RegionLanguageID>,
     pub last_penalty_time: SaveFlag<i64>,
     pub last_tips_index: SaveFlag<i32>,
-    // TODO: enum
-    pub region_code: SaveFlag<u32>,
-    // TODO: enum
-    pub region: SaveFlag<u32>,
-    // TODO: enum
-    pub hemisphere: SaveFlag<u32>,
-    // TODO: enum
-    pub currency: SaveFlag<u32>,
+    pub region_code: SaveFlag<RegionCode>,
+    pub region: SaveFlag<Region>,
+    pub hemisphere: SaveFlag<Hemisphere>,
+    pub currency: SaveFlag<Currency>,
     pub skin_color_index: SaveFlag<u32>,
     pub encyclopedia_opened_sector: SaveFlag<u32>,
     pub money: SaveFlag<u32>,
@@ -94,6 +87,78 @@ pub struct PlayerManager {
 }
 
 const _: () = assert!(core::mem::size_of::<PlayerManager>() == 0x243e38);
+
+#[derive(Debug)]
+#[repr(u32)]
+pub enum RegionLanguageID {
+    JPja,
+    USen,
+    USes,
+    USfr,
+    USpt,
+    EUen,
+    EUes,
+    EUfr,
+    EUde,
+    EUit,
+    EUpt,
+    EUnl,
+    EUru,
+    KRko,
+    CNzh,
+    TWzh,
+}
+
+#[derive(Debug)]
+#[repr(u32)]
+pub enum Region {
+    Invalid,
+    Japan,
+    Europe,
+    NorthAmerica,
+    SouthAmericaN,
+    SouthAmericaS,
+    Australia,
+    Asia,
+    OthersN,
+    OthersS,
+}
+
+#[derive(Debug)]
+#[repr(u32)]
+pub enum RegionCode {
+    Invalid,
+    Japan,
+    Usa,
+    Europe,
+    Australia,
+    HongKongTaiwanKorea,
+    China,
+}
+
+#[derive(Debug)]
+#[repr(u32)]
+pub enum Hemisphere {
+    Invalid,
+    North,
+    South,
+}
+
+#[derive(Debug)]
+#[repr(u32)]
+pub enum Currency {
+    Invalid,
+    Yen,
+    Dollar,
+    Euro,
+    Pound,
+    AsiaDollar,
+    Won,
+    Yuan,
+    Rouble,
+    Peso,
+    GeneralUse,
+}
 
 #[derive(Debug)]
 #[repr(C)]
