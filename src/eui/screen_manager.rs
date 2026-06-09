@@ -38,7 +38,7 @@ pub struct BaseScreenVtable<T> {
     pub check_derived_runtime_type_info: extern "C" fn(u64, u64) -> u64,
     pub get_runtime_type_info: extern "C" fn() -> u64,
 
-    pub is_enable_control: extern "C" fn(u64) -> u64,
+    pub is_enable_control: extern "C" fn(*mut T) -> u64,
     pub open: extern "C" fn(u64, i32) -> u64,  // eui::screen
     pub close: extern "C" fn(u64, i32) -> u64, // eui::screen
     pub get_ui_controller: extern "C" fn() -> u64,
@@ -58,8 +58,8 @@ pub struct BaseScreenVtable<T> {
     pub update: extern "C" fn(u64),
     pub draw: extern "C" fn(u64, u64),
 
-    pub unk_0x98: extern "C" fn(), // eui::screen
-    pub unk_0xa0: extern "C" fn(), // eui::screen
+    pub unk_0x98: extern "C" fn(),                   // eui::screen
+    pub unk_0xa0: extern "C" fn(u64, u64, u32, u64), // eui::screen
 
     pub get_layout_name: extern "C" fn(u64) -> u64,
 
@@ -82,7 +82,7 @@ pub struct BaseScreenVtable<T> {
     pub do_create_tag_processor: extern "C" fn(u64, u64) -> u64, // eui::screen
     pub do_build_layout: extern "C" fn(u64, u64, u64),           // eui::screen
     pub do_build_layout_impl_: extern "C" fn(u64, u64, u64, u64, u64) -> u32, // eui::screen
-    pub do_load_resource: extern "C" fn(u64, u64, u64, u64, u64, u64, u64, u64), // eui::screen
+    pub do_load_resource: extern "C" fn(u64),                    // eui::screen
     pub do_create_slide_list_control: extern "C" fn(u64, u64, u64, u64) -> u64, // eui::screen
     pub do_initialize: extern "C" fn(u64),                       // eui::screen
     pub do_update: extern "C" fn(u64),                           // eui::screen
@@ -165,7 +165,7 @@ pub struct BaseScreenVtable<T> {
     pub unk_0x318: extern "C" fn() -> u64, // returns a pointer to string that says "N_CameraMove_00"
 
     pub app_finish_open: extern "C" fn(u64, u64),
-    pub unk_0x328: extern "C" fn() -> u64, // mov w0, 0xffffffff -> ret
+    pub unk_0x328: extern "C" fn() -> i32, // mov w0, 0xffffffff -> ret
     pub unk_0x330: extern "C" fn() -> u64, // mov w0, 0x1 -> ret
     pub unk_0x338: extern "C" fn(u64) -> u8, // mov w0, [x0, 0x298] -> ret
     pub unk_0x340: extern "C" fn() -> u64, // mov w0, wzr -> ret
@@ -211,7 +211,7 @@ pub struct BaseScreenVtable<T> {
     pub unk_0x430: extern "C" fn(), // ret
     pub unk_0x438: extern "C" fn(), // ret
     pub unk_0x440: extern "C" fn(),
-    pub unk_0x448: extern "C" fn(u64, u64, u64),
+    pub unk_0x448: extern "C" fn(u64, u64),
     pub unk_0x450: extern "C" fn(u64),     // mov w0, 0x1 -> ret
     pub unk_0x458: extern "C" fn() -> u64, // mov x0, xzr -> ret
 

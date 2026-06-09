@@ -318,8 +318,8 @@ pub struct ModMenuVTable {
     pub unk_0x498: extern "C" fn(*mut ScreenModMenu),
 }
 
-extern "C" fn stub_max() -> u64 {
-    0xffffffff
+extern "C" fn stub_neg() -> i32 {
+    -1
 }
 
 extern "C" fn stub_one() -> u64 {
@@ -367,7 +367,7 @@ pub unsafe fn initialize_vtable(text_base: u64) {
                 update: std::mem::transmute(text_base + 0x32c788),
                 draw: std::mem::transmute(text_base + 0x231dddc),
                 unk_0x98: stub,
-                unk_0xa0: stub,
+                unk_0xa0: std::mem::transmute(text_base + 0x231d394),
                 get_layout_name: std::mem::transmute(text_base + 0x9554e4),
                 get_message_name: std::mem::transmute(text_base + 0x5ef674),
                 get_message_name_2: std::mem::transmute(text_base + 0x6dbff8),
@@ -459,7 +459,7 @@ pub unsafe fn initialize_vtable(text_base: u64) {
 
                 app_finish_open: std::mem::transmute(text_base + 0x742790),
 
-                unk_0x328: stub_max,
+                unk_0x328: stub_neg,
                 unk_0x330: stub_one,
                 unk_0x338: std::mem::transmute(text_base + 0x4353d8),
                 unk_0x340: stub_zero,
@@ -508,7 +508,7 @@ pub unsafe fn initialize_vtable(text_base: u64) {
                 unk_0x440: stub,
                 unk_0x448: std::mem::transmute(text_base + 0x215c19c),
                 unk_0x450: std::mem::transmute(text_base + 0x215c27c),
-                unk_0x458: stub_zero,
+                unk_0x458: stub_one,
 
                 get_state_machine: stub_zero,
                 register_states: stub,
@@ -541,13 +541,24 @@ extern "C" fn mod_menu_app_do_initialize(this: *mut ScreenModMenu) {
             std::mem::transmute(text_base + 0x48a84);
 
         let layout = this.base.layout as u64;
-        this.anim_in_from_bg = layout_ex_find_animator_by_name(layout, b"InFromBG\0".as_ptr(), 0);
+        this.anim_in_from_bg = layout_ex_find_animator_by_name(layout, "InFromBG\0".as_ptr(), 0);
 
-        this.anim_out_to_bg = layout_ex_find_animator_by_name(layout, b"OutToBG\0".as_ptr(), 0);
+        this.anim_out_to_bg = layout_ex_find_animator_by_name(layout, "OutToBG\0".as_ptr(), 0);
 
-        this.anim_short_in = layout_ex_find_animator_by_name(layout, b"ShortIn\0".as_ptr(), 0);
+        this.anim_short_in = layout_ex_find_animator_by_name(layout, "ShortIn\0".as_ptr(), 0);
 
-        let _in_after = layout_ex_find_animator_by_name(layout, b"InAfter\0".as_ptr(), 0);
+        let _in_after = layout_ex_find_animator_by_name(layout, "InAfter\0".as_ptr(), 0);
+
+        let layout_ex_find_resource_by_name: extern "C" fn(u64, *const u8) -> u64 =
+            std::mem::transmute(text_base + 0x828390);
+
+        let lvar1 = layout_ex_find_resource_by_name(layout, "L_UnLockNew_00".as_ptr());
+        if lvar1 != 0 {
+            println!("lvar1 was non-zero");
+            let fun_7100858978: extern "C" fn(u64, i32) = std::mem::transmute(text_base + 0x858978);
+
+            fun_7100858978(lvar1, 1);
+        }
     }
 }
 
@@ -1090,16 +1101,15 @@ extern "C" fn mod_menu_get_rtti() -> u64 {
     unsafe { MOD_MENU_TYPE_INFO_PTR }
 }
 
-extern "C" fn mod_menu_is_enable_control(this: u64) -> u64 {
+extern "C" fn mod_menu_is_enable_control(this: *mut ScreenModMenu) -> u64 {
     unsafe {
-        if *((this + 0x488) as *const u8) == 0 {
+        let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
+        if !(*this).is_input_enabled {
             return 0;
         }
 
-        let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
-        let inner: extern "C" fn(u64) -> u64 = std::mem::transmute(text_base + 0x244518);
-
-        inner(this)
+        let fun_7100244518: extern "C" fn(u64) -> u64 = std::mem::transmute(text_base + 0x244518);
+        fun_7100244518(this as u64)
     }
 }
 

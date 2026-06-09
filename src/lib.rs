@@ -2,6 +2,7 @@ mod eui;
 mod eui_controller;
 mod fsm_ext;
 mod mod_menu;
+mod save;
 mod sead;
 mod ui_framework;
 
