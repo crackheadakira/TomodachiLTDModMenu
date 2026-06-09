@@ -10,13 +10,6 @@ use crate::{
 };
 
 #[repr(C)]
-pub struct Birthday {
-    pub year: SaveFlag<u64>,
-    pub month: SaveFlag<u64>,
-    pub day: SaveFlag<u64>,
-}
-
-#[repr(C)]
 pub struct PlayerManager {
     pub disposer: IDisposer,
     pub birthday: Birthday,
@@ -102,18 +95,29 @@ pub struct PlayerManager {
 
 const _: () = assert!(core::mem::size_of::<PlayerManager>() == 0x243e38);
 
+#[derive(Debug)]
+#[repr(C)]
+pub struct Birthday {
+    pub year: SaveFlag<u64>,
+    pub month: SaveFlag<u64>,
+    pub day: SaveFlag<u64>,
+}
+
+#[derive(Debug)]
 #[repr(C)]
 pub struct BondInfo {
     pub lottery_for_good: SaveFlag<i32>,
     pub lottery_for_bad: SaveFlag<i32>,
 }
 
+#[derive(Debug)]
 #[repr(C)]
 pub struct CommonDailyItem {
     pub next_update_random_seed: SaveFlag<u32>,
     pub last_update_time: SaveFlag<i64>,
 }
 
+#[derive(Debug)]
 #[repr(C)]
 pub struct FoodShopDailyItem {
     pub next_update_random_seed: SaveFlag<[u32; 4]>,
@@ -121,6 +125,7 @@ pub struct FoodShopDailyItem {
     pub is_unlocked_other_region: SaveFlag<bool>,
 }
 
+#[derive(Debug)]
 #[repr(C)]
 pub struct ClothShopDailyItem {
     pub daily_coordinate_info: SaveFlag<[GenericCoordinateInfo; 5]>,
@@ -128,23 +133,27 @@ pub struct ClothShopDailyItem {
     pub is_need_show_new: SaveFlag<bool>,
 }
 
+#[derive(Debug)]
 #[repr(C)]
 pub struct RoomStyleWeeklyItem {
     pub room_style_variation_group_string_id: SaveFlag<u32>,
     pub is_need_show_new: SaveFlag<bool>,
 }
 
+#[derive(Debug)]
 #[repr(C)]
 pub struct ShopItem {
     pub is_need_show_new: SaveFlag<bool>,
 }
 
+#[derive(Debug)]
 #[repr(C)]
 pub struct GenericCoordinateInfo {
     pub coordinate_string_id: u32,
     pub variation: i32,
 }
 
+#[derive(Debug)]
 #[repr(C)]
 pub struct DailyClothInfo {
     pub cloth_string_id: u32,
@@ -152,6 +161,7 @@ pub struct DailyClothInfo {
     pub cloth_type: u32,
 }
 
+#[derive(Debug)]
 #[repr(C)]
 pub struct MiiBirthdayNews {
     pub last_watched_time: SaveFlag<i64>,
@@ -159,6 +169,7 @@ pub struct MiiBirthdayNews {
     pub watched_mii_index: [SaveFlag<i32>; 6],
 }
 
+#[derive(Debug)]
 #[repr(C)]
 pub struct MarketUpdateInfo {
     pub last_update_time: SaveFlag<i64>,
@@ -167,12 +178,14 @@ pub struct MarketUpdateInfo {
     pub market_coordinate_info: SaveFlag<GenericCoordinateInfo>,
 }
 
+#[derive(Debug)]
 #[repr(C)]
 pub struct Trial {
     pub is_viewed_sequence_import_trial_save_data: SaveFlag<bool>,
     pub is_success_import_trial_save_data: SaveFlag<bool>,
 }
 
+#[derive(Debug)]
 #[repr(C)]
 pub struct ClockSnapshot {
     pub user_context: SystemClockContext,
@@ -189,18 +202,21 @@ pub struct ClockSnapshot {
     pub _type: u8,
 }
 
+#[derive(Debug)]
 #[repr(C)]
 pub struct SteadyClockTimePoint {
     pub value: i64,
     pub source_id: [u8; 16],
 }
 
+#[derive(Debug)]
 #[repr(C)]
 pub struct SystemClockContext {
     pub offset: i64,
     pub steady_time_point: SteadyClockTimePoint,
 }
 
+#[derive(Debug)]
 #[repr(C)]
 pub struct CalendarTime {
     pub year: u16,
@@ -211,6 +227,7 @@ pub struct CalendarTime {
     pub second: u8,
 }
 
+#[derive(Debug)]
 #[repr(C)]
 pub struct CalendarAdditionalInfo {
     pub day_of_week: u32,
@@ -220,6 +237,7 @@ pub struct CalendarAdditionalInfo {
     pub utc_offset_sec: i32,
 }
 
+#[derive(Debug)]
 #[repr(C)]
 pub struct ItemSaveInfo {
     pub vtable: *const c_void,
@@ -229,12 +247,14 @@ pub struct ItemSaveInfo {
     pub state: i32,
 }
 
+#[derive(Debug)]
 #[repr(C)]
 pub struct ItemTimelineInfo {
     pub base: ItemSaveInfo,
     pub first_obtained_sec: u64,
 }
 
+#[derive(Debug)]
 #[repr(C)]
 pub struct TimedCatalogInfo {
     pub base: ItemTimelineInfo,
@@ -242,6 +262,7 @@ pub struct TimedCatalogInfo {
     pub informed_new_release: bool,
 }
 
+#[derive(Debug)]
 #[repr(C)]
 pub struct DirectCatalogInfo {
     pub base: ItemSaveInfo,
@@ -249,6 +270,7 @@ pub struct DirectCatalogInfo {
     pub informed_new_release: bool,
 }
 
+#[derive(Debug)]
 #[repr(C)]
 pub struct TroubleInfo {
     pub vtable: *const c_void,

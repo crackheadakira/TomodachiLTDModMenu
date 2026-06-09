@@ -6,10 +6,7 @@ mod save;
 mod sead;
 mod ui_framework;
 
-use std::{
-    ffi::c_char,
-    sync::atomic::{AtomicBool, AtomicU64, Ordering},
-};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 
 use skyline::hooks::InlineCtx;
 
@@ -18,6 +15,7 @@ use crate::{
     eui_controller::EuiController,
     fsm_ext::GAMEPLAY_CONTROLLER,
     mod_menu::{ModMenuVTable, MOD_MENU_HASH},
+    save::player::PlayerManager,
     ui_framework::ButtonState,
 };
 

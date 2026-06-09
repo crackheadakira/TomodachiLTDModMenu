@@ -24,6 +24,17 @@ pub struct SaveFlag<T> {
     pub cs: CriticalSection,
 }
 
+impl<T: std::fmt::Debug> std::fmt::Debug for SaveFlag<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("SaveFlag")
+            .field("current_value", &self.current_value)
+            .field("previous_value", &self.previous_value)
+            .field("last_updated", &self.last_updated)
+            .field("is_dirty", &self.is_dirty)
+            .finish()
+    }
+}
+
 impl<T> SaveFlag<T> {
     pub unsafe fn get(&self, save_data_manager: *mut c_void) -> *const T {
         let mutex_ptr = &self.cs.critical_section_inner as *const _ as *mut _;
