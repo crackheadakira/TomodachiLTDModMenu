@@ -66,7 +66,9 @@ pub fn setup_custom_save() {
             save_data_setup_hook,
             save_data_create_instance_hook,
             debug_state_machine_hook,
-            calc_file_size_hook
+            calc_file_size_hook,
+            save_state_write_hook,
+            save_all_hook
         );
 
         println!("[SaveSystem] Hooks installed.");
@@ -96,18 +98,17 @@ pub fn setup_custom_save() {
         for off in cmp_offsets {
             patch_cmp_immediate(text_base + off, 4);
         }
-
-        let nop_offsets = [0xa3654c, 0xa36604, 0x1d87834, 0x1d87928, 0x1d87b68];
-        for off in nop_offsets {
-            let instr = *((text_base + off) as *const u32);
-            skyline::patching::nop_pointer((text_base + off) as *const u8).unwrap();
-        }
     }
 }
 
 #[skyline::hook(offset = 0x1d8783c)]
 unsafe fn calc_file_size_hook(this: *mut u8) {
     // what the fuck? why does this make Mod.sav appear on Ryubing? cache?
+    call_original!(this)
+}
+
+#[skyline::hook(offset = 0x1d87adc)]
+unsafe fn save_state_write_hook(this: *mut u8) -> u64 {
     call_original!(this)
 }
 
@@ -118,6 +119,43 @@ unsafe fn debug_state_machine_hook(this: *mut u8) {
     println!("[State::Read] State machine running with ID {comp_id}");
 
     call_original!(this);
+}
+
+#[skyline::hook(offset = 0x1d7c270)]
+unsafe fn save_all_hook(this: *mut u8) {
+    let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
+
+    let trigger_save_machine: extern "C" fn(*mut u8) = std::mem::transmute(text_base + 0x1d87b80);
+    let is_save_done: extern "C" fn(*mut u8) -> bool = std::mem::transmute(text_base + 0x1d87b90);
+
+    let mod_sav = *(this.add(MOD_OFFSET) as *mut *mut u8);
+    if !mod_sav.is_null() {
+        trigger_save_machine(mod_sav);
+    }
+
+    call_original!(this);
+
+    // Wait for mod_sav to finish too
+    if !mod_sav.is_null() {
+        let check_thread_mgr: extern "C" fn(*mut u8) -> bool =
+            std::mem::transmute(text_base + 0x4aefcc);
+        let g_thread_manager = (text_base + 0x528b6f8) as *mut u8;
+        let b_var1 = check_thread_mgr(g_thread_manager);
+
+        while !is_save_done(mod_sav) {
+            if b_var1 {
+                let tick_fn: extern "C" fn(*mut u8) = std::mem::transmute(text_base + 0x5e1f40);
+                tick_fn(this);
+            } else {
+                let g_sleep_time = *((text_base + 0x32cb2f0) as *const i64);
+                let to_timespan: extern "C" fn(i64) -> i64 =
+                    std::mem::transmute(text_base + 0x25ccfc0);
+                let sleep: extern "C" fn(i64) = std::mem::transmute(text_base + 0x25cd0f0);
+                let ts = to_timespan(g_sleep_time / 100000);
+                sleep(ts);
+            }
+        }
+    }
 }
 
 #[skyline::hook(offset = 0x5e1f40)]
@@ -172,6 +210,7 @@ unsafe fn tick_save_machines_reimplementation(this: *mut u8) {
 // this seems to call "SaveState::Build"
 #[skyline::hook(offset = 0x4aee60)]
 unsafe fn write_polling_loop_reimplementation(this: *mut u8) {
+    println!("[WriteLoop] fired");
     let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
     let set_write_flag_fn: extern "C" fn(*mut u8) = std::mem::transmute(text_base + 0x4aefbc);
     let check_thread_mgr_fn: extern "C" fn(*mut u8) -> bool =
@@ -181,6 +220,8 @@ unsafe fn write_polling_loop_reimplementation(this: *mut u8) {
     let player = *(this.add(0x68) as *mut *mut u8);
     let map = *(this.add(0x70) as *mut *mut u8);
     let mod_sav = *(this.add(MOD_OFFSET) as *mut *mut u8);
+
+    println!("[WriteLoop] mod_sav={:#x}", mod_sav as u64);
 
     let g_thread_manager = (text_base + 0x528b6f8) as *mut u8;
     let b_var_1 = check_thread_mgr_fn(g_thread_manager);
