@@ -57,6 +57,27 @@ unsafe fn build_clean_extended_table(text_base: u64) -> u64 {
     static_table_destination as u64
 }
 
+unsafe fn flush_cache(addr: u64, size: u64) {
+    let start = addr as usize & !63usize;
+    let end = (addr + size + 63) as usize & !63usize;
+
+    let mut p = start;
+    while p < end {
+        std::arch::asm!("dc cvau, {}", in(reg) p, options(nostack));
+        p += 64;
+    }
+
+    std::arch::asm!("dsb ish", options(nostack));
+
+    p = start;
+    while p < end {
+        std::arch::asm!("ic ivau, {}", in(reg) p, options(nostack));
+        p += 64;
+    }
+
+    std::arch::asm!("dsb ish", "isb", options(nostack));
+}
+
 pub fn setup_custom_save() {
     unsafe {
         println!("[SaveSystem] Installing hooks...");
@@ -66,8 +87,6 @@ pub fn setup_custom_save() {
             save_data_setup_hook,
             save_data_create_instance_hook,
             debug_state_machine_hook,
-            calc_file_size_hook,
-            save_state_write_hook,
             save_all_hook
         );
 
@@ -98,18 +117,15 @@ pub fn setup_custom_save() {
         for off in cmp_offsets {
             patch_cmp_immediate(text_base + off, 4);
         }
+
+        for (off, _) in adrp_add_pairs {
+            flush_cache(text_base + off, 0x200);
+        }
+
+        for off in cmp_offsets {
+            flush_cache(text_base + off, 0x200);
+        }
     }
-}
-
-#[skyline::hook(offset = 0x1d8783c)]
-unsafe fn calc_file_size_hook(this: *mut u8) {
-    // what the fuck? why does this make Mod.sav appear on Ryubing? cache?
-    call_original!(this)
-}
-
-#[skyline::hook(offset = 0x1d87adc)]
-unsafe fn save_state_write_hook(this: *mut u8) -> u64 {
-    call_original!(this)
 }
 
 #[skyline::hook(offset = 0xa36454)]
