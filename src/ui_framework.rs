@@ -93,7 +93,7 @@ macro_rules! install_buttons {
             }
         }
 
-        skyline::install_hooks!(__custom_ui_inline_hook, $crate::ui_framework::__bflyt_register_controller_hook);
+        skyline::install_hooks!(__custom_ui_inline_hook, /*$crate::ui_framework::__bflyt_register_controller_hook*/);
     };
 }
 

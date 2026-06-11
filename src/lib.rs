@@ -3,12 +3,16 @@ mod eui_controller;
 mod fsm_ext;
 mod mod_menu;
 mod save;
+mod save_file;
 mod sead;
 mod ui_framework;
 
-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::{
+    ffi::c_char,
+    sync::atomic::{AtomicBool, AtomicU64, Ordering},
+};
 
-use skyline::hooks::InlineCtx;
+use skyline::{hooks::InlineCtx, nn::fs::OpenFile};
 
 use crate::{
     eui::{screen_manager::BaseScreen, DrawState},
@@ -213,20 +217,71 @@ fn build_scene_controller(manager: u64, heap: u64, screen_id: u32, unknown: u64)
     call_original!(manager, heap, screen_id, unknown)
 }
 
+#[skyline::hook(offset = 0x5ea080)]
+unsafe fn save_write_hook(save_manager: *const u8, stream: *const u8) -> bool {
+    let result = call_original!(save_manager, stream);
+    println!(
+        "[saveProperty::deserializedDataStreamRead] called with manager={:p} stream={:p} result={}",
+        save_manager, stream, result
+    );
+    result
+}
+
+#[skyline::hook(replace = skyline::nn::fs::OpenFile)]
+unsafe fn open_file_hook(
+    arg1: *mut skyline::nn::fs::FileHandle,
+    path: *const u8,
+    arg2: i32,
+) -> u32 {
+    if !path.is_null() {
+        if let Ok(path_str) = std::ffi::CStr::from_ptr(path as *const c_char).to_str() {
+            if path_str.contains(".sav") {
+                let text_base =
+                    skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
+                let text_end = text_base + 0x4000000; // rough upper bound
+
+                let fp: u64;
+                std::arch::asm!("mov {}, x29", out(reg) fp);
+
+                print!("[OpenFile] {}", path_str);
+                let mut frame = fp;
+                for _ in 0..8 {
+                    if frame == 0 {
+                        break;
+                    }
+                    let lr = *((frame + 8) as *const u64);
+                    if lr >= text_base && lr < text_end {
+                        print!(" | Colony+{:#x}", lr - text_base);
+                    }
+                    frame = *(frame as *const u64);
+                }
+                println!();
+            }
+        }
+    }
+    call_original!(arg1, path, arg2)
+}
+
 #[skyline::main(name = "tomodachi-mod-menu")]
 pub fn main() {
-    fsm_ext::init();
+    save_file::setup_custom_save();
+    // fsm_ext::init();
 
-    skyline::install_hooks!(build_scene_controller, crate::mod_menu::capture_screen_heap);
+    skyline::install_hooks!(
+        // build_scene_controller,
+        // crate::mod_menu::capture_screen_heap,
+        save_write_hook,
+        open_file_hook,
+    );
 
-    fsm_ext::register_menu(
+    /*fsm_ext::register_menu(
         0x88,
         Some(state_88_enter),
         Some(state_88_update),
         Some(state_88_exit),
-    );
+    );*/
 
-    install_buttons! {
+    /*install_buttons! {
         "Island_Menu_00", "L_ResidentList_00" => test_spawn_mod_menu,
-    }
+    }*/
 }

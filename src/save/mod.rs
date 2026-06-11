@@ -15,8 +15,20 @@ pub unsafe fn get_global_sync_counter(save_data_manager: *mut c_void) -> i32 {
 }
 
 #[repr(C)]
+pub struct SaveFlagVtable<T> {
+    pub check_derived: unsafe extern "C" fn(*const c_void, *const c_void) -> *const c_void,
+    pub get_runtime_type: unsafe extern "C" fn() -> *const c_void,
+    pub dtor1: unsafe extern "C" fn(*mut SaveFlag<T>),
+    pub dtor2: unsafe extern "C" fn(*mut SaveFlag<T>),
+    pub get_value_ptr: unsafe extern "C" fn(*const SaveFlag<T>) -> *const T,
+    pub prepare_for_deserialize: unsafe extern "C" fn(*mut SaveFlag<T>) -> *mut T,
+    pub mark_dirty_and_get_write_ptr: unsafe extern "C" fn(*mut SaveFlag<T>) -> *mut T,
+    pub get_value_ptr_2: unsafe extern "C" fn(*const SaveFlag<T>) -> *const T,
+}
+
+#[repr(C)]
 pub struct SaveFlag<T> {
-    pub vtable: *const c_void,
+    pub vtable: *const SaveFlagVtable<T>,
     pub current_value: T,
     pub previous_value: T,
     pub last_updated: i32,
