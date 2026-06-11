@@ -1,9 +1,10 @@
 // FUN_7101d87824, String indexing thing
 // FUN_7100606ec4 dynamically sets MaxComponentCount
 
+static MOD_SAVE_FILES: &[&str] = &["Mod.sav"];
+
 pub const ORIGINAL_SIZE: usize = 0x9b0;
-pub const MOD_OFFSET: usize = ORIGINAL_SIZE;
-pub const NEW_SIZE: usize = ORIGINAL_SIZE + 8;
+pub const NEW_SIZE: usize = ORIGINAL_SIZE + (8 * MOD_SAVE_FILES.len());
 
 use skyline::{
     hooks::InlineCtx,
@@ -51,8 +52,10 @@ unsafe fn build_clean_extended_table(text_base: u64) -> u64 {
 
     std::ptr::copy_nonoverlapping(orig_table, static_table_destination, 3);
 
-    let mod_sav = CString::new("Mod.sav").unwrap().into_raw();
-    *static_table_destination.add(3) = mod_sav;
+    for (i, name) in MOD_SAVE_FILES.iter().enumerate() {
+        let save_name_ptr = CString::new(*name).unwrap().into_raw();
+        *static_table_destination.add(3 + i) = save_name_ptr;
+    }
 
     static_table_destination as u64
 }
@@ -115,7 +118,7 @@ pub fn setup_custom_save() {
         let cmp_offsets = [0xa3653c, 0xa36600, 0x1d87830, 0x1d8791c, 0x1d87b64];
 
         for off in cmp_offsets {
-            patch_cmp_immediate(text_base + off, 4);
+            patch_cmp_immediate(text_base + off, 3 + MOD_SAVE_FILES.len() as u32);
         }
 
         for (off, _) in adrp_add_pairs {
@@ -144,21 +147,44 @@ unsafe fn save_all_hook(this: *mut u8) {
     let trigger_save_machine: extern "C" fn(*mut u8) = std::mem::transmute(text_base + 0x1d87b80);
     let is_save_done: extern "C" fn(*mut u8) -> bool = std::mem::transmute(text_base + 0x1d87b90);
 
-    let mod_sav = *(this.add(MOD_OFFSET) as *mut *mut u8);
-    if !mod_sav.is_null() {
+    let base = this.add(ORIGINAL_SIZE) as *mut *mut u8;
+
+    let mod_sav = *(this.add(ORIGINAL_SIZE) as *mut *mut u8);
+    for i in 0..MOD_SAVE_FILES.len() {
+        let mod_sav = *base.add(i);
+
+        if mod_sav.is_null() {
+            continue;
+        }
+
         trigger_save_machine(mod_sav);
     }
 
     call_original!(this);
 
-    // Wait for mod_sav to finish too
-    if !mod_sav.is_null() {
-        let check_thread_mgr: extern "C" fn(*mut u8) -> bool =
-            std::mem::transmute(text_base + 0x4aefcc);
-        let g_thread_manager = (text_base + 0x528b6f8) as *mut u8;
-        let b_var1 = check_thread_mgr(g_thread_manager);
+    let mut all_done = false;
 
-        while !is_save_done(mod_sav) {
+    let check_thread_mgr: extern "C" fn(*mut u8) -> bool =
+        std::mem::transmute(text_base + 0x4aefcc);
+    let g_thread_manager = (text_base + 0x528b6f8) as *mut u8;
+    let b_var1 = check_thread_mgr(g_thread_manager);
+
+    while !all_done {
+        all_done = true;
+
+        for i in 0..MOD_SAVE_FILES.len() {
+            let mod_sav = base.add(i);
+
+            if mod_sav.is_null() {
+                continue;
+            }
+
+            if !is_save_done(*mod_sav) {
+                all_done = false;
+            }
+        }
+
+        if !all_done {
             if b_var1 {
                 let tick_fn: extern "C" fn(*mut u8) = std::mem::transmute(text_base + 0x5e1f40);
                 tick_fn(this);
@@ -167,6 +193,7 @@ unsafe fn save_all_hook(this: *mut u8) {
                 let to_timespan: extern "C" fn(i64) -> i64 =
                     std::mem::transmute(text_base + 0x25ccfc0);
                 let sleep: extern "C" fn(i64) = std::mem::transmute(text_base + 0x25cd0f0);
+
                 let ts = to_timespan(g_sleep_time / 100000);
                 sleep(ts);
             }
@@ -182,7 +209,9 @@ unsafe fn tick_save_machines_reimplementation(this: *mut u8) {
     let mii = *(this.add(0x60) as *mut *mut u8);
     let player = *(this.add(0x68) as *mut *mut u8);
     let map = *(this.add(0x70) as *mut *mut u8);
-    let mod_sav = *(this.add(MOD_OFFSET) as *mut *mut u8);
+
+    let mod_base = *(this.add(ORIGINAL_SIZE) as *mut *mut u8);
+    let mod_count = MOD_SAVE_FILES.len();
 
     let is_machine_idle_or_ready = |machine_ptr: *mut u8| -> bool {
         let load_machine_current_state = *(machine_ptr.add(0x10) as *const i32);
@@ -201,7 +230,12 @@ unsafe fn tick_save_machines_reimplementation(this: *mut u8) {
             tick_machine_fn(map);
 
             if is_machine_idle_or_ready(map) {
-                tick_machine_fn(mod_sav);
+                for i in 0..mod_count {
+                    let mod_sav = mod_base.add(i);
+                    if !mod_sav.is_null() {
+                        tick_machine_fn(mod_sav);
+                    }
+                }
             }
         }
     }
@@ -226,7 +260,6 @@ unsafe fn tick_save_machines_reimplementation(this: *mut u8) {
 // this seems to call "SaveState::Build"
 #[skyline::hook(offset = 0x4aee60)]
 unsafe fn write_polling_loop_reimplementation(this: *mut u8) {
-    println!("[WriteLoop] fired");
     let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
     let set_write_flag_fn: extern "C" fn(*mut u8) = std::mem::transmute(text_base + 0x4aefbc);
     let check_thread_mgr_fn: extern "C" fn(*mut u8) -> bool =
@@ -235,9 +268,9 @@ unsafe fn write_polling_loop_reimplementation(this: *mut u8) {
     let mii = *(this.add(0x60) as *mut *mut u8);
     let player = *(this.add(0x68) as *mut *mut u8);
     let map = *(this.add(0x70) as *mut *mut u8);
-    let mod_sav = *(this.add(MOD_OFFSET) as *mut *mut u8);
 
-    println!("[WriteLoop] mod_sav={:#x}", mod_sav as u64);
+    let mod_base = *(this.add(ORIGINAL_SIZE) as *mut *mut u8);
+    let mod_count = MOD_SAVE_FILES.len();
 
     let g_thread_manager = (text_base + 0x528b6f8) as *mut u8;
     let b_var_1 = check_thread_mgr_fn(g_thread_manager);
@@ -245,14 +278,30 @@ unsafe fn write_polling_loop_reimplementation(this: *mut u8) {
     set_write_flag_fn(mii);
     set_write_flag_fn(player);
     set_write_flag_fn(map);
-    set_write_flag_fn(mod_sav);
+
+    for i in 0..mod_count {
+        let m = mod_base.add(i);
+        if !m.is_null() {
+            set_write_flag_fn(m);
+        }
+    }
 
     let is_any_machine_busy = || -> bool {
         // while LoadMachine currentState isn't "LoadState::Done" or 0xC0 is true
         let mii_busy = (*(mii.add(0xc0)) & 1) != 0 || *(mii.add(0x10) as *const i32) != 4;
         let player_busy = (*(player.add(0xc0)) & 1) != 0 || *(player.add(0x10) as *const i32) != 4;
         let map_busy = (*(map.add(0xc0)) & 1) != 0 || *(map.add(0x10) as *const i32) != 4;
-        let mod_busy = (*(mod_sav.add(0xc0)) & 1) != 0 || *(mod_sav.add(0x10) as *const i32) != 4;
+
+        let mut mod_busy = false;
+
+        for i in 0..mod_count {
+            let m = mod_base.add(i);
+            if m.is_null() {
+                continue;
+            }
+
+            mod_busy |= (*(m.add(0xc0)) & 1) != 0 || *(m.add(0x10) as *const i32) != 4;
+        }
 
         mii_busy || player_busy || map_busy || mod_busy
     };
@@ -294,39 +343,45 @@ unsafe fn save_data_setup_hook(this: *mut u8, heap: *const u8) {
     let sead_heap_allocator: extern "C" fn(usize, *const u8, i32) -> *mut u8 =
         std::mem::transmute(text_base + 0x1e4c20);
 
-    let pg_var_3 = sead_heap_allocator(200, heap, 8);
-    std::ptr::write_bytes(pg_var_3, 0, 200);
+    let mod_count = MOD_SAVE_FILES.len();
 
-    *(pg_var_3.add(0x10) as *mut u32) = 0xffffffff;
-    *(pg_var_3.add(0x18) as *mut i32) = -1;
-    *(pg_var_3.add(0x1c) as *mut i32) = -1;
-    *(pg_var_3.add(0x20) as *mut u32) = 0xffffffff;
-    *(pg_var_3.add(0x24) as *mut u32) = 0xffffffff;
-    *(pg_var_3.add(0x28) as *mut *mut u8) = std::ptr::null_mut();
-    *(pg_var_3.add(0x30) as *mut u32) = 0;
-    *(pg_var_3.add(0x50) as *mut *mut u8) = std::ptr::null_mut();
+    for i in 0..mod_count {
+        let pg_var_3 = sead_heap_allocator(200, heap, 8);
+        std::ptr::write_bytes(pg_var_3, 0, 200);
 
-    *(pg_var_3.add(0x68) as *mut u32) = 0xffffffff;
-    *(pg_var_3.add(0x70) as *mut u64) = 0xffffffffffffffff;
-    *(pg_var_3.add(0x7c) as *mut u32) = 0xffffffff;
-    *(pg_var_3.add(0x80) as *mut *mut u8) = std::ptr::null_mut();
-    *(pg_var_3.add(0x88) as *mut u32) = 0;
-    *(pg_var_3.add(0xa8) as *mut *mut u8) = std::ptr::null_mut();
+        *(pg_var_3.add(0x10) as *mut u32) = 0xffffffff;
+        *(pg_var_3.add(0x18) as *mut i32) = -1;
+        *(pg_var_3.add(0x1c) as *mut i32) = -1;
+        *(pg_var_3.add(0x20) as *mut u32) = 0xffffffff;
+        *(pg_var_3.add(0x24) as *mut u32) = 0xffffffff;
+        *(pg_var_3.add(0x28) as *mut *mut u8) = std::ptr::null_mut();
+        *(pg_var_3.add(0x30) as *mut u32) = 0;
+        *(pg_var_3.add(0x50) as *mut *mut u8) = std::ptr::null_mut();
 
-    *(pg_var_3.add(0xc1) as *mut u8) = 0;
+        *(pg_var_3.add(0x68) as *mut u32) = 0xffffffff;
+        *(pg_var_3.add(0x70) as *mut u64) = 0xffffffffffffffff;
+        *(pg_var_3.add(0x7c) as *mut u32) = 0xffffffff;
+        *(pg_var_3.add(0x80) as *mut *mut u8) = std::ptr::null_mut();
+        *(pg_var_3.add(0x88) as *mut u32) = 0;
+        *(pg_var_3.add(0xa8) as *mut *mut u8) = std::ptr::null_mut();
 
-    *(this.add(MOD_OFFSET) as *mut *mut u8) = pg_var_3;
+        *(pg_var_3.add(0xc1) as *mut u8) = 0;
+
+        *(this.add(ORIGINAL_SIZE + (8 * i)) as *mut *mut u8) = pg_var_3;
+    }
 
     let internal_heap_ptr = *(this.add(0x38) as *const *mut u8);
 
     let fun_71006025a0: extern "C" fn(*mut u8, *mut u8, u32) =
         std::mem::transmute(text_base + 0x6025a0);
 
-    fun_71006025a0(pg_var_3, internal_heap_ptr, 3);
-    println!(
-        "[SaveSystem] setup done, MOD_OFFSET ptr={:#x}",
-        *(this.add(MOD_OFFSET) as *const usize)
-    );
+    for i in 0..mod_count {
+        fun_71006025a0(
+            *(this.add(ORIGINAL_SIZE + (8 * i)) as *mut *mut u8),
+            internal_heap_ptr,
+            (3 + i) as u32,
+        );
+    }
 }
 
 #[skyline::hook(offset = 0x5f7f7c)]
