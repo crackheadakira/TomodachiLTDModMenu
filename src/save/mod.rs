@@ -1,4 +1,5 @@
 pub mod player;
+pub mod ugc;
 
 use std::ffi::c_void;
 
@@ -98,3 +99,24 @@ const _: () = assert!(core::mem::size_of::<SaveFlag<bool>>() == 0x58);
 const _: () = assert!(core::mem::size_of::<SaveFlag<i32>>() == 0x58);
 const _: () = assert!(core::mem::size_of::<SaveFlag<u64>>() == 0x60);
 const _: () = assert!(core::mem::size_of::<SaveFlag<WFixedSafeString64>>() == 0x170);
+
+#[derive(Debug)]
+#[repr(u32)]
+pub enum RegionLanguageID {
+    JPja,
+    USen,
+    USes,
+    USfr,
+    USpt,
+    EUen,
+    EUes,
+    EUfr,
+    EUde,
+    EUit,
+    EUpt,
+    EUnl,
+    EUru,
+    KRko,
+    CNzh,
+    TWzh,
+}

@@ -8,7 +8,7 @@ mod sead;
 mod ui_framework;
 
 use std::{
-    ffi::c_char,
+    ffi::{c_char, c_void},
     sync::atomic::{AtomicBool, AtomicU64, Ordering},
 };
 
@@ -20,6 +20,7 @@ use crate::{
     fsm_ext::GAMEPLAY_CONTROLLER,
     mod_menu::{ModMenuVTable, MOD_MENU_HASH},
     save::player::PlayerManager,
+    sead::prim::SafeString,
     ui_framework::ButtonState,
 };
 
@@ -202,21 +203,6 @@ pub fn give_money(money_count: u32) {
 
 static SCREEN_HEAP: AtomicU64 = AtomicU64::new(0);
 
-#[skyline::hook(offset = 0x4a9bf8)]
-fn build_scene_controller(manager: u64, heap: u64, screen_id: u32, unknown: u64) -> *mut u8 {
-    unsafe {
-        let lr: u64;
-        std::arch::asm!("mov {}, x30", out(reg) lr);
-
-        let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
-        let lr_offset = lr - text_base;
-
-        println!("[BuildSceneController] SceneManager: {manager:#X}, Heap: {heap:#X}, Screen ID: {screen_id}, Unknown: {unknown:#X}, called by {lr_offset:#X}");
-    };
-
-    call_original!(manager, heap, screen_id, unknown)
-}
-
 #[skyline::hook(offset = 0x5ea080)]
 unsafe fn save_write_hook(save_manager: *const u8, stream: *const u8) -> bool {
     let result = call_original!(save_manager, stream);
@@ -227,6 +213,102 @@ unsafe fn save_write_hook(save_manager: *const u8, stream: *const u8) -> bool {
     result
 }
 
+#[skyline::hook(offset = 0x250798)]
+unsafe fn sharc_archive_res_get_file_impl(
+    this: *const u8,
+    file_path: *const SafeString,
+    file_info: *const u8,
+) -> *const c_void {
+    if !file_path.is_null() {
+        let file_path = unsafe { &*file_path };
+
+        println!("[sead::SharcArhiveRes::getFileImpl_] searching for {file_path:?}");
+    }
+
+    call_original!(this, file_path, file_info)
+}
+
+#[skyline::hook(offset = 0x218e7ac)]
+unsafe fn sharc_archive_res_try_get_file_path_impl(
+    this: *const u8,
+    out_file_path: *const SafeString,
+    entry_id: i32,
+) -> bool {
+    let result = call_original!(this, out_file_path, entry_id);
+
+    if !out_file_path.is_null() {
+        let file_path = unsafe { &*out_file_path };
+
+        println!("[sead::SharcArhiveRes::tryGetFilePathImpl_] searching for {file_path:?}");
+    }
+
+    result
+}
+
+#[skyline::hook(offset = 0x2508c0)]
+unsafe fn sharc_archive_res_convert_path_to_entry_id(
+    this: *const u8,
+    file_path: *const SafeString,
+) -> i32 {
+    let result = call_original!(this, file_path);
+
+    if !file_path.is_null() {
+        let file_path = unsafe { &*file_path };
+
+        println!(
+            "[sead::SharcArhiveRes::convertPathToEntryIDImpl_] got id {result} for {file_path:?}"
+        );
+    }
+
+    result
+}
+
+#[skyline::hook(offset = 0x218e1c8)]
+unsafe fn resource_factory_try_create_with_decomp(
+    this: *const u8,
+    load_arg: *const LoadArg,
+    decompressor: *const c_void,
+) -> *const c_void {
+    if !load_arg.is_null() {
+        let load_arg = unsafe { &*load_arg };
+
+        println!(
+            "[sead::DirectResourceFactoryBase::tryCreateWithDecomp] creating {:?}",
+            load_arg.path
+        );
+    }
+
+    call_original!(this, load_arg, decompressor)
+}
+
+#[skyline::hook(offset = 0x28a24c)]
+unsafe fn resource_factory_try_create(this: *const u8, load_arg: *const LoadArg) -> *const c_void {
+    if !load_arg.is_null() {
+        let load_arg = unsafe { &*load_arg };
+
+        println!(
+            "[sead::DirectResourceFactoryBase::tryCreate] creating {:?}",
+            load_arg.path
+        );
+    }
+
+    call_original!(this, load_arg)
+}
+
+#[skyline::hook(offset = 0x57f398)]
+unsafe fn resource_factory_create(this: *const u8, load_arg: *const LoadArg) -> *const c_void {
+    if !load_arg.is_null() {
+        let load_arg = unsafe { &*load_arg };
+
+        println!(
+            "[sead::DirectResourceFactoryBase::create] creating {:?}",
+            load_arg.path
+        );
+    }
+
+    call_original!(this, load_arg)
+}
+
 #[skyline::hook(replace = skyline::nn::fs::OpenFile)]
 unsafe fn open_file_hook(
     arg1: *mut skyline::nn::fs::FileHandle,
@@ -235,28 +317,7 @@ unsafe fn open_file_hook(
 ) -> u32 {
     if !path.is_null() {
         if let Ok(path_str) = std::ffi::CStr::from_ptr(path as *const c_char).to_str() {
-            if path_str.contains(".sav") {
-                let text_base =
-                    skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
-                let text_end = text_base + 0x4000000; // rough upper bound
-
-                let fp: u64;
-                std::arch::asm!("mov {}, x29", out(reg) fp);
-
-                print!("[OpenFile] {}", path_str);
-                let mut frame = fp;
-                for _ in 0..8 {
-                    if frame == 0 {
-                        break;
-                    }
-                    let lr = *((frame + 8) as *const u64);
-                    if lr >= text_base && lr < text_end {
-                        print!(" | Colony+{:#x}", lr - text_base);
-                    }
-                    frame = *(frame as *const u64);
-                }
-                println!();
-            }
+            println!("[OpenFile] {path_str}");
         }
     }
     call_original!(arg1, path, arg2)
@@ -264,14 +325,19 @@ unsafe fn open_file_hook(
 
 #[skyline::main(name = "tomodachi-mod-menu")]
 pub fn main() {
-    save_file::setup_custom_save();
-    // fsm_ext::init();
+    /*save_file::setup_custom_save();
+    fsm_ext::init();*/
 
     skyline::install_hooks!(
-        // build_scene_controller,
         // crate::mod_menu::capture_screen_heap,
-        save_write_hook,
-        open_file_hook,
+        // save_write_hook,
+        // sharc_archive_res_get_file_impl,
+        // sharc_archive_res_try_get_file_path_impl,
+        // sharc_archive_res_convert_path_to_entry_id,
+        resource_factory_create,
+        resource_factory_try_create,
+        resource_factory_try_create_with_decomp,
+        // open_file_hook,
     );
 
     /*fsm_ext::register_menu(
@@ -284,4 +350,22 @@ pub fn main() {
     /*install_buttons! {
         "Island_Menu_00", "L_ResidentList_00" => test_spawn_mod_menu,
     }*/
+}
+
+#[repr(C)]
+#[derive(Debug)]
+struct LoadArg {
+    pub path: SafeString,
+    pub instance_heap: *const c_void,
+    pub load_data_heap: *const c_void,
+    pub instance_alignment: i32,
+    pub load_data_alignment: i32,
+    pub load_data_buffer: *const u8,
+    pub load_data_buffer_size: u32,
+    pub load_data_buffer_alignment: i32,
+    pub factory: *const c_void,
+    pub device: *const c_void,
+    pub div_size: u32,
+    pub assert_on_alloc_fail: bool,
+    pub has_tried_create_with_decomp: *const bool,
 }

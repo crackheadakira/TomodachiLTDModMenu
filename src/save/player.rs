@@ -1,7 +1,7 @@
 use std::ffi::c_void;
 
 use crate::{
-    save::SaveFlag,
+    save::{RegionLanguageID, SaveFlag},
     sead::{
         container::FixedTreeMap,
         heap::IDisposer,
@@ -87,27 +87,6 @@ pub struct PlayerManager {
 }
 
 const _: () = assert!(core::mem::size_of::<PlayerManager>() == 0x243e38);
-
-#[derive(Debug)]
-#[repr(u32)]
-pub enum RegionLanguageID {
-    JPja,
-    USen,
-    USes,
-    USfr,
-    USpt,
-    EUen,
-    EUes,
-    EUfr,
-    EUde,
-    EUit,
-    EUpt,
-    EUnl,
-    EUru,
-    KRko,
-    CNzh,
-    TWzh,
-}
 
 #[derive(Debug)]
 #[repr(u32)]

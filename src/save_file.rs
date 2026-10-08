@@ -333,10 +333,6 @@ unsafe fn write_polling_loop_reimplementation(this: *mut u8) {
 #[skyline::hook(offset = 0x601f0c)]
 unsafe fn save_data_setup_hook(this: *mut u8, heap: *const u8) {
     call_original!(this, heap);
-    println!(
-        "[SaveSystem] save_data_setup_hook called, this={:#x}",
-        this as u64
-    );
 
     let text_base = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
 
