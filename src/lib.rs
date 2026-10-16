@@ -1,6 +1,7 @@
 mod eui;
 mod eui_controller;
 mod fsm_ext;
+mod game;
 mod mod_menu;
 mod save;
 mod save_file;
