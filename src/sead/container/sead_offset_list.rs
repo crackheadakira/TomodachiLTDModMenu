@@ -2,6 +2,7 @@ use std::marker::PhantomData;
 
 use crate::sead::container::ListImpl;
 
+#[repr(C)]
 pub struct OffsetList<T> {
     base: ListImpl,
     offset: i32,

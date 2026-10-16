@@ -1,5 +1,6 @@
 use super::sead_safe_string::SafeString;
 
+#[repr(C)]
 pub struct INamable {
     inamable_name: SafeString,
 }

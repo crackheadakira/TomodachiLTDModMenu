@@ -13,6 +13,7 @@ crate-type = ["cdylib"]
 [dependencies]
 lazy_static = "1.5.0"
 skyline = "0.6.0"
+native-vtable = { git = "https://github.com/crackheadakira/vtable-rs.git" }
 
 [profile.dev]
 panic = "unwind"
@@ -21,5 +22,5 @@ panic = "unwind"
 panic = "abort"
 lto = true
 
-[lints.clippy]
+[workspace.lints.clippy]
 missing_transmute_annotations = "allow"

@@ -1,11 +1,14 @@
 use std::ffi::c_void;
 
+use native_vtable::vtable;
+
 use crate::{
-    eui::{ButtonBase, ButtonGroup, ButtonHitHandler, LayoutEx},
+    eui::{screen::Screen, ButtonBase, ButtonGroup, ButtonHitHandler, LayoutEx},
     sead::{
         container::{Buffer, ListNode, OffsetList, PtrArray},
         heap::{Heap, IDisposer},
         prim::SafeString,
+        resource::sharc::SharcArchive,
         thread::CriticalSection,
     },
 };
@@ -28,6 +31,23 @@ pub enum ScreenState {
     Opening = 1,
     Opened = 2,
     Closing = 3,
+}
+
+#[derive(PartialEq, PartialOrd)]
+#[repr(u8)]
+pub enum Direction {
+    Up = 0,
+    Down = 1,
+    Left = 2,
+    Right = 3,
+}
+
+#[derive(PartialEq, PartialOrd)]
+#[repr(u8)]
+pub enum ExtendedCloseState {
+    Normal = 0,
+    Requested = 1,
+    WaitingForClose = 2,
 }
 
 #[repr(C)]
@@ -325,6 +345,26 @@ pub struct ScreenInfo {
 }
 
 #[repr(C)]
+pub struct ScreenMgr {
+    pub vtable: *const c_void,
+    pub screen_array: Buffer<*mut Screen>,
+    pub draw_unit_id_array: Buffer<u8>,
+    pub screen_factory: *mut ScreenFactory,
+    pub unk_30: [u8; 8],
+    pub arc_resource_manager: *const c_void,
+    pub box_cursor_manager: *const c_void,
+    pub animation_step: f32,
+    pub unk_4c: u32,
+    pub multi_filter_archive: SharcArchive,
+    pub message_manager: *const c_void,
+    pub font_manager: *const c_void,
+    pub draw_target_array: [u8; 2],
+    pub last_draw_unit_id: u8,
+    pub min_screen_index: i32,
+    pub unk_70: *const c_void,
+}
+
+#[repr(C)]
 pub struct ScreenManager {
     pub vtable: *const c_void,
     pub screen_array: PtrArray<BaseScreen>,
@@ -351,6 +391,7 @@ const _: () = assert!(core::mem::size_of::<ScreenFactory>() == 0x30);
 const _: () = assert!(core::mem::size_of::<ScreenFactoryVtable>() == 0xc0);
 const _: () = assert!(core::mem::size_of::<ScreenInfo>() == 0x38);
 const _: () = assert!(core::mem::size_of::<ScreenManager>() == 0x1470);
+const _: () = assert!(core::mem::size_of::<ScreenMgr>() == 0x78);
 
 impl<V> BaseScreen<V> {
     #[inline(always)]

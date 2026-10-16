@@ -1,7 +1,10 @@
 use skyline::nn::ui2d::Pane;
 use std::ffi::{c_char, c_void};
 
-use crate::{eui::Animator, sead::container::ListNode};
+use crate::{
+    eui::{screen::Screen, Animator},
+    sead::container::ListNode,
+};
 
 #[repr(C)]
 pub struct Size {
@@ -23,18 +26,17 @@ pub struct Layout {
     pub get_user_shader_information_from_user_data_callback: *const c_void,
 }
 
-#[repr(C)]
+#[repr(C, align(4))]
 pub struct LayoutEx {
     pub base: Layout,
     pub in_animator: *mut Animator,
     pub out_animator: *mut Animator,
     pub loop_animator: *mut Animator,
     pub wait_animator: *mut Animator,
-    pub screen: *const c_void,
+    pub screen: *const Screen,
     pub parent: *mut LayoutEx,
     pub flags: u8,
     pub anim_state: u8,
-    pub pad_92: [u8; 6],
 }
 
 impl LayoutEx {
