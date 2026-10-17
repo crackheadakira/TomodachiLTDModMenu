@@ -1,3 +1,4 @@
+mod aal;
 mod eui;
 mod eui_controller;
 mod fsm_ext;
