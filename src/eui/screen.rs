@@ -24,7 +24,7 @@ pub unsafe trait VftScreen: VftIDisposer {
     unsafe fn open(&mut self, target_state: i32) -> *mut Self;
     unsafe fn close(&mut self, target_state: i32);
     unsafe fn get_ui_controller(&self) -> *const c_void;
-    unsafe fn adjust_box_cursor_node(&mut self);
+    unsafe fn adjust_box_cursor_node(&mut self, bounds: *mut [f32; 4]);
     unsafe fn create_box_cursor_node(&mut self, heap: *mut Heap) -> *mut BoxCursorNode;
 
     unsafe fn replace_parts_layout_name(

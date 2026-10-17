@@ -6,6 +6,7 @@ pub mod screen;
 pub mod screen_manager;
 
 pub use animator::Animator;
+pub use box_cursor_node::BoxCursorNode;
 pub use control::{ButtonBase, ButtonGroup, ButtonHitCallback, ButtonHitHandler, ControlBase};
 pub use layout_ex::{Layout, LayoutEx};
 pub use screen::{Screen, VftScreen, VftScreenLayout};
